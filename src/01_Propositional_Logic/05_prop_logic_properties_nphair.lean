@@ -47,7 +47,8 @@ notation (name := pVar) `[` v `]` :=  pVar v
 notation (name := pNot) ¬e := pUnOp opNot e
 notation (name := pAnd) e1 ∧ e2 :=  pBinOp opAnd e1 e2
 notation (name := pOr) e1 ∨ e2 :=  pBinOp opOr e1 e2
-notation (name := pImp) e1 => e2 := pBinOp opImp e1 e2
+precedence ` => `: 50
+notation (name := pImp) e1 `=>` e2 := pBinOp opImp e1 e2
 notation (name := pIff) e1 ↔ e2 := pBinOp opIff e1 e2
 notation (name := pXor) e1 ⊕ e2 := pBinOp opXor e1 e2
 -- Let's not bother with notations for nand and nor at this point
@@ -107,6 +108,7 @@ unfold pEval,
 unfold bin_op_sem,
 
 -- case analysis on Boolean value (pEval e1 i)
+-- consider both cases for this term.
 cases (pEval e1 i),
 
 -- within first case, nested case analysis on (pEval e2 i)
@@ -202,6 +204,8 @@ cases (pEval e1 i),  -- expand "bnot (bnot (pEval e1 i)) = pEval e1 i" into the 
 apply rfl,           -- what if i wanted to do this in more steps and go from bnot (bnot ff) to bnot tt
 apply rfl
 end 
+
+
 
 end cs6501
 
