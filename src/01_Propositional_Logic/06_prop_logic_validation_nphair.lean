@@ -206,22 +206,23 @@ end
 theorem and_introduction:
   ∀ (e1 e2 : prop_expr) 
     (i : prop_var → bool),
-    (band (pEval e1 i) (pEval e2 i)) = tt → (pEval (e1 ∧ e2) i) = tt :=
+    (pEval e1 i) = tt ∧
+    (pEval e2 i) = tt → (pEval (e1 ∧ e2) i) = tt :=
     begin
     assume e1 e2  i,
     unfold pEval,
     unfold bin_op_sem un_op_sem,
     cases (pEval e1 i),
     cases (pEval e2 i),
-    assume h,
-    assumption,
-    assume h,
-    assumption,
+    simp,
+    contradiction,
+    simp,
+    contradiction,
+    simp,
     cases (pEval e2 i),
-    assume h,
-    assumption,
-    assume h,
-    assumption,
+    simp,
+    contradiction,
+    simp,
     end
 
 -- 2. X ∧ Y ⊢ X               -- and_elimination_left
