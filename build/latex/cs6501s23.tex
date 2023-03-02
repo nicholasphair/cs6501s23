@@ -81,7 +81,7 @@
 
 
 \title{Computing Foundations}
-\date{Feb 23, 2023}
+\date{Mar 02, 2023}
 \release{1.2.2}
 \author{Kevin Sullivan}
 \newcommand{\sphinxlogo}{\vbox{}}
@@ -3149,6 +3149,13 @@ In fact, Lean simply \sphinxstyleemphasis{defines} \sphinxstyleemphasis{¬X} to 
 \PYG{c+c1}{\PYGZhy{}\PYGZhy{} def not (a : Prop) := a → false}
 \PYG{c+c1}{\PYGZhy{}\PYGZhy{} prefix `¬`:40 := not}
 \PYG{k}{\PYGZsh{}check} \PYG{n}{not}
+
+\PYG{k+kd}{example} \PYG{o}{:} \PYG{n+nb+bp}{¬} \PYG{l+m+mi}{0} \PYG{n+nb+bp}{=} \PYG{l+m+mi}{1} \PYG{o}{:=}
+\PYG{k+kd}{begin}
+\PYG{k}{show} \PYG{l+m+mi}{0} \PYG{n+nb+bp}{=} \PYG{l+m+mi}{1} \PYG{n+nb+bp}{→} \PYG{n}{false}\PYG{o}{,}
+\PYG{k}{assume} \PYG{n}{h}\PYG{o}{,}
+\PYG{n}{contradiction}\PYG{o}{,}
+\PYG{k+kd}{end}
 \end{sphinxVerbatim}
 
 \sphinxAtStartPar
@@ -3389,10 +3396,13 @@ to be considered.
 \PYG{k+kd}{theorem} \PYG{n}{demorgan1} \PYG{o}{:} \PYG{n+nb+bp}{∀} \PYG{n}{P} \PYG{n}{Q}\PYG{o}{,} \PYG{n+nb+bp}{¬}\PYG{o}{(}\PYG{n}{P} \PYG{n+nb+bp}{∧} \PYG{n}{Q}\PYG{o}{)} \PYG{n+nb+bp}{↔} \PYG{o}{(}\PYG{n+nb+bp}{¬}\PYG{n}{P} \PYG{n+nb+bp}{∨} \PYG{n+nb+bp}{¬} \PYG{n}{Q}\PYG{o}{)} \PYG{o}{:=}
 \PYG{k+kd}{begin}
 \PYG{k}{assume} \PYG{n}{P} \PYG{n}{Q}\PYG{o}{,}
+\PYG{c+c1}{\PYGZhy{}\PYGZhy{}apply iff.intro \PYGZus{} \PYGZus{},}
 \PYG{n}{split}\PYG{o}{,}
 
 \PYG{c+c1}{\PYGZhy{}\PYGZhy{} FORWARD}
 \PYG{k}{assume} \PYG{n}{h}\PYG{o}{,}
+
+
 \PYG{k}{have} \PYG{n}{ponp} \PYG{o}{:=} \PYG{n}{classical.em} \PYG{n}{P}\PYG{o}{,}
 \PYG{k}{have} \PYG{n}{qonq} \PYG{o}{:=} \PYG{n}{classical.em} \PYG{n}{Q}\PYG{o}{,}
 
@@ -3400,27 +3410,49 @@ to be considered.
 \PYG{n}{cases} \PYG{n}{qonq} \PYG{k}{with} \PYG{n}{q} \PYG{n}{nq}\PYG{o}{,}
 \PYG{k}{have} \PYG{n}{pandq} \PYG{o}{:=} \PYG{n}{and.intro} \PYG{n}{p} \PYG{n}{q}\PYG{o}{,}
 \PYG{n}{contradiction}\PYG{o}{,}
+
 \PYG{n}{apply} \PYG{n}{or.inr} \PYG{n}{nq}\PYG{o}{,}
 \PYG{n}{apply} \PYG{n}{or.inl} \PYG{n}{np}\PYG{o}{,}
 
 \PYG{c+c1}{\PYGZhy{}\PYGZhy{} BACKWARDS}
 \PYG{k}{assume} \PYG{n}{h}\PYG{o}{,}
-\PYG{k}{have} \PYG{n}{ponp} \PYG{o}{:=} \PYG{n}{classical.em} \PYG{n}{P}\PYG{o}{,}
-\PYG{k}{have} \PYG{n}{qonq} \PYG{o}{:=} \PYG{n}{classical.em} \PYG{n}{Q}\PYG{o}{,}
-\PYG{n}{cases} \PYG{n}{ponp} \PYG{k}{with} \PYG{n}{p} \PYG{n}{np}\PYG{o}{,}
-\PYG{n}{cases} \PYG{n}{qonq} \PYG{k}{with} \PYG{n}{q} \PYG{n}{nq}\PYG{o}{,}
-
 \PYG{n}{cases} \PYG{n}{h}\PYG{o}{,}
-\PYG{n}{contradiction}\PYG{o}{,}
+
+\PYG{k}{assume} \PYG{n}{pandq}\PYG{o}{,}
+\PYG{k}{have} \PYG{n}{p} \PYG{o}{:=} \PYG{n}{and.elim\PYGZus{}left} \PYG{n}{pandq}\PYG{o}{,}
+\PYG{c+c1}{\PYGZhy{}\PYGZhy{} cases pandq with p q,}
 \PYG{n}{contradiction}\PYG{o}{,}
 
-\PYG{c+c1}{\PYGZhy{}\PYGZhy{} HOMEWORK:}
-\PYG{c+c1}{\PYGZhy{}\PYGZhy{} (1) FINISH THIS PROOF}
-\PYG{c+c1}{\PYGZhy{}\PYGZhy{} (2) IS BACKWARDS PROVABLE WITHOUT em?}
+\PYG{k}{assume} \PYG{n}{pandq}\PYG{o}{,}
+\PYG{n}{cases} \PYG{n}{pandq} \PYG{k}{with} \PYG{n}{p} \PYG{n}{q}\PYG{o}{,}
+\PYG{n}{contradiction}\PYG{o}{,}
 
 \PYG{k+kd}{end}
 
-\PYG{c+c1}{\PYGZhy{}\PYGZhy{} HOMEWORK: PROVE THE SECOND DEMORGAN RULE}
+\PYG{k+kd}{example} \PYG{o}{:} \PYG{n+nb+bp}{∀} \PYG{o}{(}\PYG{n}{P} \PYG{o}{:} \PYG{k+kt}{Prop}\PYG{o}{)}\PYG{o}{,} \PYG{n+nb+bp}{¬} \PYG{o}{(}\PYG{n}{P} \PYG{n+nb+bp}{∧} \PYG{n+nb+bp}{¬}\PYG{n}{P}\PYG{o}{)} \PYG{o}{:=}
+\PYG{k+kd}{begin}
+\PYG{k}{assume} \PYG{n}{P}\PYG{o}{,}
+\PYG{k}{assume} \PYG{n}{h}\PYG{o}{,}
+\PYG{n}{cases} \PYG{n}{h} \PYG{k}{with} \PYG{n}{p} \PYG{n}{np}\PYG{o}{,}
+\PYG{n}{apply} \PYG{n}{false.elim} \PYG{o}{(}\PYG{n}{np} \PYG{n}{p}\PYG{o}{)}\PYG{o}{,}
+\PYG{k+kd}{end}
+
+\PYG{k+kd}{example} \PYG{o}{:} \PYG{n+nb+bp}{∀} \PYG{n}{P} \PYG{n}{Q} \PYG{n}{R}\PYG{o}{,} \PYG{n}{P} \PYG{n+nb+bp}{∨} \PYG{o}{(}\PYG{n}{Q} \PYG{n+nb+bp}{∧} \PYG{n}{R}\PYG{o}{)} \PYG{n+nb+bp}{→} \PYG{o}{(}\PYG{n}{P} \PYG{n+nb+bp}{∨} \PYG{n}{Q}\PYG{o}{)} \PYG{n+nb+bp}{∧} \PYG{o}{(}\PYG{n}{P} \PYG{n+nb+bp}{∨} \PYG{n}{R}\PYG{o}{)} \PYG{o}{:=}
+\PYG{k+kd}{begin}
+\PYG{k}{assume} \PYG{n}{P} \PYG{n}{Q} \PYG{n}{R}\PYG{o}{,}
+\PYG{k}{assume} \PYG{n}{h}\PYG{o}{,}
+\PYG{n}{apply} \PYG{n}{and.intro} \PYG{n}{\PYGZus{}} \PYG{n}{\PYGZus{}}\PYG{o}{,}
+
+\PYG{n}{cases} \PYG{n}{h} \PYG{k}{with} \PYG{n}{p} \PYG{n}{qandr}\PYG{o}{,}
+\PYG{n}{exact} \PYG{n}{or.inl} \PYG{n}{p}\PYG{o}{,}
+\PYG{n}{cases} \PYG{n}{qandr} \PYG{k}{with} \PYG{n}{q} \PYG{n}{r}\PYG{o}{,}
+\PYG{n}{apply} \PYG{n}{or.inr} \PYG{n}{q}\PYG{o}{,}
+\PYG{n}{cases} \PYG{n}{h}\PYG{o}{,}
+\PYG{n}{exact} \PYG{n}{or.inl} \PYG{n}{h}\PYG{o}{,}
+\PYG{n}{cases} \PYG{n}{h}\PYG{o}{,}
+\PYG{n}{exact} \PYG{o}{(}\PYG{n}{or.inr} \PYG{n}{h\PYGZus{}right}\PYG{o}{)}
+
+\PYG{k+kd}{end}
 \end{sphinxVerbatim}
 
 
@@ -3538,15 +3570,336 @@ interesting algebraic commonalities.
 
 \section{Natural Numbers}
 \label{\detokenize{A_03_Recursive_Types:natural-numbers}}
+
+\subsection{Data Type}
+\label{\detokenize{A_03_Recursive_Types:data-type}}
 \begin{sphinxVerbatim}[commandchars=\\\{\}]
 \PYG{k}{\PYGZsh{}check} \PYG{n}{nat}
+\end{sphinxVerbatim}
+
+\begin{sphinxVerbatim}[commandchars=\\\{\}]
+\PYG{c+c1}{\PYGZhy{}\PYGZhy{} notations for writing succ applications}
+\PYG{k+kd}{def} \PYG{n}{three\PYGZsq{}}  \PYG{o}{:=} \PYG{o}{(}\PYG{n}{nat.succ} \PYG{o}{(}\PYG{n}{nat.succ} \PYG{o}{(}\PYG{n}{nat.succ} \PYG{o}{(}\PYG{n}{nat.zero}\PYG{o}{)}\PYG{o}{)}\PYG{o}{)}\PYG{o}{)}
+\PYG{k+kd}{def} \PYG{n}{three}  \PYG{o}{:=} \PYG{n}{nat.zero.succ.succ.succ}
+\end{sphinxVerbatim}
+
+
+\subsection{Operations}
+\label{\detokenize{A_03_Recursive_Types:operations}}
+\sphinxAtStartPar
+Having seen how the \sphinxstyleemphasis{nat} data type is defined, we now look
+at how to define functions taking \sphinxstyleemphasis{nat} values as arguments.
+As we’ve seen before, many such functions here will again be
+defined by case analysis on an incoming nat argument value.
+That means considering two cases separately: the incoming value
+is either zero or non\sphinxhyphen{}zero: that is, either \sphinxstyleemphasis{nat.zero,} or
+\sphinxstyleemphasis{nat.succ n’} for some “one\sphinxhyphen{}smaller” value, \sphinxstyleemphasis{n’}. For example,
+if the incoming argument is \sphinxstyleemphasis{succ(succ(succ zero))}, i.e., 3,
+then (a) it does not match \sphinxstyleemphasis{nat.zero}, but (b) it does match
+\sphinxstyleemphasis{nat.succ n’}, with \sphinxstyleemphasis{n’} is bound to \sphinxstyleemphasis{succ(succ zero)}, i.e., 2.
+
+\begin{sphinxVerbatim}[commandchars=\\\{\}]
+\PYG{c+c1}{\PYGZhy{}\PYGZhy{} increment is just succ application}
+\PYG{k+kd}{def} \PYG{n}{inc} \PYG{o}{(}\PYG{n}{n\PYGZsq{}} \PYG{o}{:} \PYG{n}{nat}\PYG{o}{)} \PYG{o}{:} \PYG{n}{nat} \PYG{o}{:=} \PYG{n}{n\PYGZsq{}.succ}
+\PYG{k+kd}{def} \PYG{n}{three\PYGZsq{}\PYGZsq{}} \PYG{o}{:=} \PYG{n}{inc}\PYG{o}{(}\PYG{n}{inc}\PYG{o}{(}\PYG{n}{inc} \PYG{n}{nat.zero}\PYG{o}{)}\PYG{o}{)}
+\end{sphinxVerbatim}
+
+\sphinxAtStartPar
+A predecessor (one less than) function can be defined by
+case analysis on a nat argument. Here we’ll define \sphinxstyleemphasis{pred’}
+to return 0 when applied to 0, and otherwise to return the
+one smaller value, \sphinxstyleemphasis{n’}, when applied to any non\sphinxhyphen{}zero value,
+\sphinxstyleemphasis{nat.succ n’}.
+
+\sphinxAtStartPar
+Rather than “implementing a function” think “proving a function
+type.” A “proof” of function type, \sphinxstyleemphasis{nat → nat,} is any function
+that converts any given nat into some resulting nat.
+
+\sphinxAtStartPar
+When proving a proposition (a type in Prop), any proof (value
+of that type) will do. When proving function or other data type,
+however, the particular value of the type that you construct is
+usually important. Here, for example, we don’t want any function
+that takes and returns a nat, but one that returns the right nat
+for the given argument.
+
+\begin{sphinxVerbatim}[commandchars=\\\{\}]
+\PYG{k+kd}{def} \PYG{n}{pred\PYGZsq{}} \PYG{o}{:} \PYG{n}{nat} \PYG{n+nb+bp}{→} \PYG{n}{nat} \PYG{o}{:=}
+\PYG{k+kd}{begin}
+\PYG{k}{assume} \PYG{n}{n}\PYG{o}{,}
+\PYG{n}{cases} \PYG{n}{n} \PYG{k}{with} \PYG{n}{n\PYGZsq{}}\PYG{o}{,}
+\PYG{n}{exact} \PYG{l+m+mi}{0}\PYG{o}{,}  \PYG{c+c1}{\PYGZhy{}\PYGZhy{} when n is zero}
+\PYG{n}{exact} \PYG{n}{n\PYGZsq{}}\PYG{o}{,} \PYG{c+c1}{\PYGZhy{}\PYGZhy{} when n is succ n\PYGZsq{}}
+\PYG{k+kd}{end}
+
+\PYG{c+c1}{\PYGZhy{}\PYGZhy{} quick test}
+\PYG{k}{\PYGZsh{}eval} \PYG{n}{pred\PYGZsq{}} \PYG{l+m+mi}{6}
+\PYG{k+kd}{example} \PYG{o}{:} \PYG{n}{pred\PYGZsq{}} \PYG{l+m+mi}{6} \PYG{n+nb+bp}{=} \PYG{l+m+mi}{5} \PYG{o}{:=} \PYG{n}{rfl}
+\end{sphinxVerbatim}
+
+\sphinxAtStartPar
+Here’s the same function just specified
+using pattern matching notation (which,
+as we’ve seen generalizes case analysis).
+
+\begin{sphinxVerbatim}[commandchars=\\\{\}]
+\PYG{k+kd}{def} \PYG{n}{pred} \PYG{o}{:} \PYG{n}{nat} \PYG{n+nb+bp}{→} \PYG{n}{nat}
+\PYG{n+nb+bp}{|} \PYG{n}{nat.zero} \PYG{o}{:=} \PYG{n}{nat.zero}  \PYG{c+c1}{\PYGZhy{}\PYGZhy{} loop at zero}
+\PYG{n+nb+bp}{|} \PYG{o}{(}\PYG{n}{nat.succ} \PYG{n}{n\PYGZsq{}}\PYG{o}{)} \PYG{o}{:=} \PYG{n}{n\PYGZsq{}}
+
+\PYG{k}{\PYGZsh{}eval} \PYG{n}{pred} \PYG{l+m+mi}{5}
+\PYG{k+kd}{example} \PYG{o}{:} \PYG{n}{pred} \PYG{l+m+mi}{5} \PYG{n+nb+bp}{=} \PYG{l+m+mi}{4} \PYG{o}{:=} \PYG{n}{rfl}
+\end{sphinxVerbatim}
+
+\sphinxAtStartPar
+Pattern matching generalizes case analysis
+by giving you a means to return different
+results based on deeper analysis of argument
+structures using pattern matching/unification.
+This example implements subtract\sphinxhyphen{}two, looping
+at zero. Notice how the third pattern matches
+to the sub\sphinxhyphen{}natural\sphinxhyphen{}number object nested two
+succ\sphinxhyphen{}levels deep.
+
+\begin{sphinxVerbatim}[commandchars=\\\{\}]
+\PYG{k+kd}{def} \PYG{n}{sub2} \PYG{o}{:} \PYG{n}{nat} \PYG{n+nb+bp}{→} \PYG{n}{nat}
+\PYG{n+nb+bp}{|} \PYG{n}{nat.zero} \PYG{o}{:=} \PYG{n}{nat.zero}
+\PYG{n+nb+bp}{|} \PYG{o}{(}\PYG{n}{nat.succ} \PYG{n}{nat.zero}\PYG{o}{)} \PYG{o}{:=} \PYG{n}{nat.zero}
+\PYG{n+nb+bp}{|} \PYG{o}{(}\PYG{n}{nat.succ} \PYG{o}{(}\PYG{n}{nat.succ} \PYG{n}{n\PYGZsq{}}\PYG{o}{)}\PYG{o}{)} \PYG{o}{:=} \PYG{n}{n\PYGZsq{}}
 \end{sphinxVerbatim}
 
 
 \section{Polymorphic Lists}
 \label{\detokenize{A_03_Recursive_Types:polymorphic-lists}}
+
+\subsection{Data Type}
+\label{\detokenize{A_03_Recursive_Types:id2}}
 \begin{sphinxVerbatim}[commandchars=\\\{\}]
 \PYG{k}{\PYGZsh{}check} \PYG{n}{list}
+\end{sphinxVerbatim}
+
+\sphinxAtStartPar
+The list data type is surprising similar to the nat
+data type. Where as a larger nat is constructed from
+only a smaller nat, a larger list is constructed from
+a new first element (the \sphinxstyleemphasis{head} of the new list) and
+a smaller list (the \sphinxstyleemphasis{tail} of the new list). This type
+builder enables us to represent lists of values of any
+type and of any finite length.
+
+\begin{sphinxVerbatim}[commandchars=\\\{\}]
+\PYG{k+kd}{universe} \PYG{n}{u}
+\PYG{k+kd}{inductive} \PYG{n}{list} \PYG{o}{(}\PYG{n}{T} \PYG{o}{:} \PYG{k+kt}{Type} \PYG{n}{u}\PYG{o}{)}
+\PYG{n+nb+bp}{|} \PYG{n}{nil} \PYG{o}{:} \PYG{n}{list}
+\PYG{n+nb+bp}{|} \PYG{n}{cons} \PYG{o}{(}\PYG{n}{hd} \PYG{o}{:} \PYG{n}{T}\PYG{o}{)} \PYG{o}{(}\PYG{n}{tl} \PYG{o}{:} \PYG{n}{list}\PYG{o}{)} \PYG{o}{:} \PYG{n}{list}
+\end{sphinxVerbatim}
+
+\begin{sphinxVerbatim}[commandchars=\\\{\}]
+\PYG{c+c1}{\PYGZhy{}\PYGZhy{} example: let\PYGZsq{}s represent the list of nats, [1,2,3]}
+\PYG{k+kd}{def} \PYG{n}{three\PYGZus{}list\PYGZus{}nat\PYGZsq{}\PYGZsq{}} \PYG{o}{:=}
+  \PYG{n}{list.cons}   \PYG{c+c1}{\PYGZhy{}\PYGZhy{} takes two arguments}
+    \PYG{l+m+mi}{1}         \PYG{c+c1}{\PYGZhy{}\PYGZhy{} head of new list}
+    \PYG{o}{(}         \PYG{c+c1}{\PYGZhy{}\PYGZhy{} tail list of the new list}
+      \PYG{n}{list.cons}   \PYG{c+c1}{\PYGZhy{}\PYGZhy{} etc.}
+        \PYG{l+m+mi}{2}
+        \PYG{o}{(}
+          \PYG{n}{list.cons}
+            \PYG{l+m+mi}{3}
+            \PYG{n}{list.nil}
+        \PYG{o}{)}
+    \PYG{o}{)}
+
+\PYG{c+c1}{\PYGZhy{}\PYGZhy{} it seems to have worked}
+\PYG{k}{\PYGZsh{}reduce} \PYG{n}{three\PYGZus{}list\PYGZus{}nat\PYGZsq{}\PYGZsq{}}
+\end{sphinxVerbatim}
+
+
+\subsection{Notations}
+\label{\detokenize{A_03_Recursive_Types:notations}}
+\begin{sphinxVerbatim}[commandchars=\\\{\}]
+\PYG{c+c1}{\PYGZhy{}\PYGZhy{} notation, :: is infix for cons}
+\PYG{c+c1}{\PYGZhy{}\PYGZhy{} [] notation adds nil at end}
+\PYG{k+kd}{def} \PYG{n}{three\PYGZus{}list\PYGZus{}nat\PYGZsq{}\PYGZsq{}\PYGZsq{}} \PYG{o}{:=} \PYG{l+m+mi}{1}\PYG{o}{:}\PYG{o}{:}\PYG{l+m+mi}{2}\PYG{o}{:}\PYG{o}{:}\PYG{l+m+mi}{3}\PYG{o}{:}\PYG{o}{:}\PYG{n}{list.nil}
+\PYG{k+kd}{def} \PYG{n}{three\PYGZus{}list\PYGZus{}nat\PYGZsq{}\PYGZsq{}\PYGZsq{}\PYGZsq{}} \PYG{o}{:=} \PYG{o}{[}\PYG{l+m+mi}{1}\PYG{o}{,}\PYG{l+m+mi}{2}\PYG{o}{,}\PYG{l+m+mi}{3}\PYG{o}{]}
+\PYG{k+kd}{def} \PYG{n}{four\PYGZus{}list\PYGZus{}nat} \PYG{o}{:=} \PYG{l+m+mi}{0}\PYG{o}{:}\PYG{o}{:}\PYG{o}{[}\PYG{l+m+mi}{1}\PYG{o}{,}\PYG{l+m+mi}{2}\PYG{o}{,}\PYG{l+m+mi}{3}\PYG{o}{]}       \PYG{c+c1}{\PYGZhy{}\PYGZhy{} fun!}
+\end{sphinxVerbatim}
+
+
+\subsection{Operations}
+\label{\detokenize{A_03_Recursive_Types:id3}}
+\begin{sphinxVerbatim}[commandchars=\\\{\}]
+\PYG{c+c1}{\PYGZhy{}\PYGZhy{} list prepend analogous to nat increment}
+\PYG{k+kd}{def} \PYG{n}{prepend\PYGZsq{}} \PYG{o}{(}\PYG{n}{α} \PYG{o}{:} \PYG{k+kt}{Type}\PYG{o}{)} \PYG{o}{(}\PYG{n}{a} \PYG{o}{:} \PYG{n}{α}\PYG{o}{)} \PYG{o}{(}\PYG{n}{l} \PYG{o}{:} \PYG{n}{list} \PYG{n}{α}\PYG{o}{)} \PYG{o}{:=}
+  \PYG{n}{list.cons} \PYG{n}{a} \PYG{n}{l}
+
+\PYG{k+kd}{def} \PYG{n}{three\PYGZus{}list\PYGZus{}nat\PYGZsq{}} \PYG{o}{:=}
+  \PYG{n}{prepend\PYGZsq{}} \PYG{n}{nat}
+    \PYG{l+m+mi}{1}
+    \PYG{o}{(}\PYG{n}{prepend\PYGZsq{}} \PYG{n}{nat}
+      \PYG{l+m+mi}{2}
+      \PYG{o}{(}\PYG{n}{prepend\PYGZsq{}} \PYG{n}{nat}
+        \PYG{l+m+mi}{3}
+        \PYG{n}{list.nil}
+      \PYG{o}{)}
+    \PYG{o}{)}
+
+\PYG{k}{\PYGZsh{}eval} \PYG{n}{three\PYGZus{}list\PYGZus{}nat\PYGZsq{}}
+
+\PYG{c+c1}{\PYGZhy{}\PYGZhy{} here with an implicit type parameter, making it equivalent to cons}
+\PYG{k+kd}{def} \PYG{n}{prepend} \PYG{o}{\PYGZob{}}\PYG{n}{α} \PYG{o}{:} \PYG{k+kt}{Type}\PYG{o}{\PYGZcb{}} \PYG{o}{(}\PYG{n}{a} \PYG{o}{:} \PYG{n}{α}\PYG{o}{)} \PYG{o}{(}\PYG{n}{l} \PYG{o}{:} \PYG{n}{list} \PYG{n}{α}\PYG{o}{)} \PYG{o}{:=}
+  \PYG{n}{list.cons} \PYG{n}{a} \PYG{n}{l}
+
+\PYG{k+kd}{def} \PYG{n}{three\PYGZus{}list\PYGZus{}nat} \PYG{o}{:=}
+  \PYG{n}{prepend}
+    \PYG{l+m+mi}{1}
+    \PYG{o}{(}\PYG{n}{prepend}
+      \PYG{l+m+mi}{2}
+      \PYG{o}{(}\PYG{n}{prepend}
+        \PYG{l+m+mi}{3}
+        \PYG{n}{list.nil}
+      \PYG{o}{)}
+    \PYG{o}{)}
+
+\PYG{c+c1}{\PYGZhy{}\PYGZhy{} okay, that looks good}
+\PYG{c+c1}{\PYGZhy{}\PYGZhy{} but know that to which it desugars}
+
+\PYG{k+kd}{example} \PYG{o}{:=} \PYG{n}{prepend\PYGZsq{}} \PYG{n}{nat} \PYG{l+m+mi}{2} \PYG{o}{[}\PYG{l+m+mi}{3}\PYG{o}{,}\PYG{l+m+mi}{4}\PYG{o}{,}\PYG{l+m+mi}{5}\PYG{o}{]}
+\PYG{k}{\PYGZsh{}eval} \PYG{n}{prepend\PYGZsq{}} \PYG{n}{nat} \PYG{l+m+mi}{2} \PYG{o}{[}\PYG{l+m+mi}{3}\PYG{o}{,}\PYG{l+m+mi}{4}\PYG{o}{,}\PYG{l+m+mi}{5}\PYG{o}{]}
+
+\PYG{k+kd}{example} \PYG{o}{:=} \PYG{n}{prepend} \PYG{l+m+mi}{2} \PYG{o}{[}\PYG{l+m+mi}{3}\PYG{o}{,}\PYG{l+m+mi}{4}\PYG{o}{,}\PYG{l+m+mi}{5}\PYG{o}{]}
+\PYG{k}{\PYGZsh{}eval} \PYG{n}{prepend} \PYG{l+m+mi}{2} \PYG{o}{[}\PYG{l+m+mi}{3}\PYG{o}{,}\PYG{l+m+mi}{4}\PYG{o}{,}\PYG{l+m+mi}{5}\PYG{o}{]}
+
+\PYG{k}{\PYGZsh{}eval} \PYG{l+m+mi}{2}\PYG{o}{:}\PYG{o}{:}\PYG{o}{[}\PYG{l+m+mi}{3}\PYG{o}{,}\PYG{l+m+mi}{4}\PYG{o}{,}\PYG{l+m+mi}{5}\PYG{o}{]}
+\end{sphinxVerbatim}
+
+
+\subsection{Partial Functions}
+\label{\detokenize{A_03_Recursive_Types:partial-functions}}
+\sphinxAtStartPar
+Now we face some interesting issues. Our aim is to define
+functions that \sphinxstyleemphasis{analyze} lists and return parts of them.
+The problem is that there are no parts when a given list
+is empty.
+
+\sphinxAtStartPar
+When we defined pred, above, we defined pred of zero to be
+zero (rather than to be undefined). Doing that makes the
+function total and easily represented as a function (lambda
+abstractraction) in Lean. However, in a different application
+we really might want to define pred 0 to be undefined, not 0.
+
+\sphinxAtStartPar
+A similar set of issues arises when we consider head and
+tail functions on lists. When given non\sphinxhyphen{}empty lists there
+is no problem. But what to do with an empty list argument?
+There is no head or tail element to return, yet some value
+of the specified type \sphinxstyleemphasis{has to be} returned.
+
+\sphinxAtStartPar
+Let’s see some fo the solutions that are available.
+
+
+\subsubsection{Default Value}
+\label{\detokenize{A_03_Recursive_Types:default-value}}
+\begin{sphinxVerbatim}[commandchars=\\\{\}]
+\PYG{c+c1}{\PYGZhy{}\PYGZhy{} a version of tail that \PYGZdq{}loops at zero\PYGZdq{}}
+\PYG{k+kd}{def} \PYG{n}{tail\PYGZsq{}} \PYG{o}{:} \PYG{n+nb+bp}{∀} \PYG{o}{\PYGZob{}}\PYG{n}{α} \PYG{o}{:} \PYG{k+kt}{Type}\PYG{o}{\PYGZcb{}}\PYG{o}{,} \PYG{n}{list} \PYG{n}{α} \PYG{n+nb+bp}{→} \PYG{n}{list} \PYG{n}{α}
+\PYG{n+nb+bp}{|} \PYG{n}{α} \PYG{n}{list.nil} \PYG{o}{:=} \PYG{n}{list.nil}
+\PYG{n+nb+bp}{|} \PYG{n}{α} \PYG{o}{(}\PYG{n}{h}\PYG{o}{:}\PYG{o}{:}\PYG{n}{t}\PYG{o}{)} \PYG{o}{:=} \PYG{n}{t}
+\PYG{k}{\PYGZsh{}eval} \PYG{n}{tail\PYGZsq{}} \PYG{o}{[}\PYG{l+m+mi}{1}\PYG{o}{,}\PYG{l+m+mi}{2}\PYG{o}{,}\PYG{l+m+mi}{3}\PYG{o}{,}\PYG{l+m+mi}{4}\PYG{o}{,}\PYG{l+m+mi}{5}\PYG{o}{]}
+\end{sphinxVerbatim}
+
+\sphinxAtStartPar
+One nice thing about this solution
+is that the function type is still about as natural as
+can be: list α → list α.
+
+
+\subsubsection{Option Values}
+\label{\detokenize{A_03_Recursive_Types:option-values}}
+\sphinxAtStartPar
+The next solution changes the type of the function,
+so that return value is in the form of a \sphinxstyleemphasis{variant}
+type, a value of which is either \sphinxstyleemphasis{none} or \sphinxstyleemphasis{some
+valid return value}.
+
+\begin{sphinxVerbatim}[commandchars=\\\{\}]
+\PYG{k+kd}{def} \PYG{n}{head\PYGZsq{}\PYGZsq{}} \PYG{o}{:} \PYG{n+nb+bp}{∀} \PYG{o}{\PYGZob{}}\PYG{n}{α} \PYG{o}{:} \PYG{k+kt}{Type}\PYG{o}{\PYGZcb{}}\PYG{o}{,} \PYG{n}{list} \PYG{n}{α} \PYG{n+nb+bp}{→} \PYG{n}{option} \PYG{n}{α}
+\PYG{n+nb+bp}{|} \PYG{n}{α} \PYG{n}{list.nil} \PYG{o}{:=} \PYG{n}{none}
+\PYG{n+nb+bp}{|} \PYG{n}{α} \PYG{o}{(}\PYG{n}{h}\PYG{o}{:}\PYG{o}{:}\PYG{n}{t}\PYG{o}{)} \PYG{o}{:=} \PYG{n}{some} \PYG{n}{h}
+
+\PYG{k}{\PYGZsh{}eval} \PYG{n}{head\PYGZsq{}\PYGZsq{}} \PYG{o}{[}\PYG{l+m+mi}{1}\PYG{o}{,}\PYG{l+m+mi}{2}\PYG{o}{,}\PYG{l+m+mi}{3}\PYG{o}{]}
+\PYG{k}{\PYGZsh{}eval} \PYG{n+nb+bp}{@}\PYG{n}{head\PYGZsq{}\PYGZsq{}} \PYG{n}{nat} \PYG{o}{[}\PYG{o}{]}
+\end{sphinxVerbatim}
+
+
+\subsubsection{Precondition}
+\label{\detokenize{A_03_Recursive_Types:precondition}}
+\sphinxAtStartPar
+Finally, we can define a version of head’ that (1) typechecks
+as being a total function, (2) can never actually be applied
+fully to an empty list, in which case (3) no real result has
+to be specified to “prove the return type” because such a case
+can’t happen. It would be a contradiction if it did, and so it
+can be dismissed as an impossibility. Magic: It \sphinxstyleemphasis{is} a total
+function, but it can never be fully appied to an empty list
+because a required proof argument, for \sphinxstyleemphasis{that} list, can never
+be given; so one can dismiss this case by false elimination,
+without having to give an actual proof of the conclusion.
+
+\sphinxAtStartPar
+Consider a head function. It returns the head element from
+a non\sphinxhyphen{}empty list, but is undefined mathematically when it’s
+applied to an empty list. The key idea in the next design
+is that we can embed a \sphinxstyleemphasis{precondition} for application of
+the function, namely that the given list not be empty. Let’s
+see how e might first write the function using a tactic
+script, to take advantage of your familiarity with using
+it to build proofs.
+
+\begin{sphinxVerbatim}[commandchars=\\\{\}]
+\PYG{k+kd}{def} \PYG{n}{head\PYGZsq{}} \PYG{o}{:} \PYG{n+nb+bp}{∀} \PYG{o}{\PYGZob{}}\PYG{n}{α} \PYG{o}{:} \PYG{k+kt}{Type}\PYG{o}{\PYGZcb{}} \PYG{o}{(}\PYG{n}{l} \PYG{o}{:} \PYG{n}{list} \PYG{n}{α}\PYG{o}{)}\PYG{o}{,} \PYG{o}{(}\PYG{n}{l} \PYG{n+nb+bp}{≠} \PYG{n}{list.nil}\PYG{o}{)} \PYG{n+nb+bp}{→} \PYG{n}{α}
+\PYG{n+nb+bp}{|}  \PYG{n}{α} \PYG{n}{l} \PYG{n}{p} \PYG{o}{:=}
+\PYG{k+kd}{begin}
+\PYG{n}{cases} \PYG{n}{l}\PYG{o}{,}
+\PYG{n}{contradiction}\PYG{o}{,}
+\PYG{n}{exact} \PYG{n}{l\PYGZus{}hd}\PYG{o}{,}
+\PYG{k+kd}{end}
+
+\PYG{c+c1}{\PYGZhy{}\PYGZhy{} When applying it a proof about the first argument has to be given}
+\PYG{k}{\PYGZsh{}eval} \PYG{n}{head\PYGZsq{}} \PYG{o}{[}\PYG{l+m+mi}{1}\PYG{o}{,}\PYG{l+m+mi}{2}\PYG{o}{,}\PYG{l+m+mi}{3}\PYG{o}{]} \PYG{k+kd}{begin} \PYG{n}{contradiction} \PYG{k+kd}{end}   \PYG{c+c1}{\PYGZhy{}\PYGZhy{} proof as a proof script}
+\PYG{k}{\PYGZsh{}eval} \PYG{n}{head\PYGZsq{}} \PYG{o}{[}\PYG{l+m+mi}{1}\PYG{o}{,}\PYG{l+m+mi}{2}\PYG{o}{,}\PYG{l+m+mi}{3}\PYG{o}{]} \PYG{o}{(}\PYG{k+kd}{by} \PYG{n}{contradiction}\PYG{o}{)}        \PYG{c+c1}{\PYGZhy{}\PYGZhy{} alternative syntax, fyi}
+\PYG{k}{\PYGZsh{}eval} \PYG{n}{head\PYGZsq{}} \PYG{o}{(}\PYG{o}{[}\PYG{o}{]} \PYG{o}{:} \PYG{n}{list} \PYG{n}{nat}\PYG{o}{)} \PYG{n}{\PYGZus{}}                 \PYG{c+c1}{\PYGZhy{}\PYGZhy{} you\PYGZsq{}ll need a proof of list.nil ≠ list.nil!}
+\end{sphinxVerbatim}
+
+
+\subsection{Exercises}
+\label{\detokenize{A_03_Recursive_Types:exercises}}\begin{itemize}
+\item {} 
+\sphinxAtStartPar
+Write a version of the pred function that can only be called for argument values greater than 0.
+
+\item {} 
+\sphinxAtStartPar
+Write a version of the pred function that returns an option nat value “in the usual way”
+
+\item {} 
+\sphinxAtStartPar
+Write a tail function that can only be called with a non\sphinxhyphen{}empty list, using our “by cases” notation for function definition. It should look like tail’. Note 1: Where a proof value is required, you can always use tactic mode to construct the required proof, in a begin..end block. If such a proof is a single tactic long, you can write by <tactic>. For example, try by contradiction as the \sphinxstyleemphasis{result} when your new tail function is applied to an empty list. Here’s how I wrote the function type. You should provide the cases (on l).
+
+\end{itemize}
+
+\sphinxAtStartPar
+def tail \{α : Type\} : ∀ (l : list α), (l ≠ list.nil) → list α
+
+\begin{sphinxVerbatim}[commandchars=\\\{\}]
+\PYG{c+c1}{\PYGZhy{}\PYGZhy{} implement the function, no need to (do not try) to match on α}
+\PYG{c+c1}{\PYGZhy{}\PYGZhy{} it\PYGZsq{}s named before the colon and is global to this definition}
+\PYG{c+c1}{\PYGZhy{}\PYGZhy{} we do want to match (do case analysis) on l, so it\PYGZsq{}s after :}
+\PYG{k+kd}{def} \PYG{n}{tail} \PYG{o}{\PYGZob{}}\PYG{n}{α} \PYG{o}{:} \PYG{k+kt}{Type}\PYG{o}{\PYGZcb{}} \PYG{o}{:} \PYG{n+nb+bp}{∀} \PYG{o}{(}\PYG{n}{l} \PYG{o}{:} \PYG{n}{list} \PYG{n}{α}\PYG{o}{)}\PYG{o}{,} \PYG{o}{(}\PYG{n}{l} \PYG{n+nb+bp}{≠} \PYG{n}{list.nil}\PYG{o}{)} \PYG{n+nb+bp}{→} \PYG{n}{list} \PYG{n}{α}
+\PYG{n+nb+bp}{|}
+\PYG{n+nb+bp}{|}
 \end{sphinxVerbatim}
 
 \sphinxstepscope
