@@ -1,10 +1,10 @@
 import .A_04_higher_order_functions
 
 
--- and a proof
-example : ∀ (n : ℕ), nat.add n 0 = n :=
+-- and a proof, zero on the right
+example : ∀ (a : ℕ), nat.add a nat.zero = a :=
 begin
-assume n,
+assume a,
 simp [nat.add],
 end
 
@@ -32,7 +32,9 @@ simp [nat.add],
 end
 
 
-def P (a : ℕ) : Prop := 0 + a = a
+
+-- The property we want to prove is universal
+def P (a : ℕ) : Prop := nat.add nat.zero a = a
 
 #check P      -- nat → Prop   -- property/predicate
 
@@ -40,74 +42,47 @@ def P (a : ℕ) : Prop := 0 + a = a
 theorem p0 : P 0 := 
 begin
 unfold P,         -- expand definition of P
-                  -- Lean applies def'n of add
-                  -- and rfl to finish off proof
+simp [nat.add],        -- rfl to finish off proof
+
 end
 
 
+#check p0
 
 theorem p1 : P 1 := 
 begin
--- add proof p0 to local context for clarity
-have p0 := p0,
--- unfold definition of P in P 0
-unfold P at p0,
--- rewrite goal by def'n of P
-show 0 + 1 = 1,
-/-
-The challenge is now clear. From a proof
-that 0 is a left identity for 0 can we build
-a proof that 0 is a left identity for one?
-The solution relies on two crucial insights.
-
-First: we can use the *second* axiom of *add*
-to rewrite the goal from *add 0 (succ 1)* to 
-*succ (add 0 0)*. Be *sure* sure you understand
-this point. Go back to the definition of *add*,
-look at the second rule, and be sure you see 
-that it enables exactly this rewriting. 
-The new goal to prove is then:: 
--/ 
-show (1 + (0 + 0)) = 1,  -- see def'n of add!
-/-
-Second, we can use our proof, p0 : (P 0), that 
-zero is a left identity for 0 on the right, to 
-rewrite 0 + 0 as 0. We're then left with the 
-goal to show that *1 + 0 = 1*, with zero *on 
-the right*, which Lean then proves for us 
-automatically by applying the first rule of 
-addition. 
--/
-rw p0,
-end  
+unfold P,
+have ih := p0,
+unfold P at ih,
+show nat.succ (nat.add nat.zero nat.zero) = 1, -- first rule of add
+rw ih,
+end
 
 
 theorem p2 : P 2  :=
 begin
-have p1 := p1,    -- just for clarity
-unfold P at p1,
-show 1 + (0 + 1) = 2,
-rewrite p1,
+unfold P,
+have ih := p1,
+show 1 + (0 + 1) = 2, -- second rule of add
+unfold P at ih,       -- use ih, Lean automation
 end 
-
--- Wow, can we just keep doing this?
 
 theorem p3 : P 3  :=
 begin
-have p2 := p2,    -- just for clarity
-unfold P at p2,
+unfold P,
+have ih := p2,    -- just for clarity
 show 1 + (0 + 2) = 3,
-rewrite p2,
+unfold P at ih,
 end 
 
-theorem zero_left_id_four : P 4  :=
+theorem p4 : P 4  :=
 begin
-have p3 := p3,    -- just for clarity
-unfold P at p3,
+have ih := p3,    -- just for clarity
 show 1 + (0 + 3) = 4,
-rewrite p3,
+unfold P at ih,
 end 
-/- Now it looks like that from any nat, *a' : nat*, 
+
+/- It looks like that from any nat, *a' : nat*, 
 and a proof of *P a'* we can prove *P (a' + 1)*.
 -/
 
@@ -133,59 +108,191 @@ apply ih,
 end
 
 
-def pa : ∀ (a : ℕ), (nat.add 0 a = a) 
+-- formerly called pa (in class)
+def zero_left_ident_add_nat : ∀ (a : ℕ), (nat.add 0 a = a) 
 | 0 := p0
-| (nat.succ a') := (step a' (pa a'))
-
-#check pa   
+| (nat.succ a') := (step a' (zero_left_ident_add_nat a'))
 
 
-#reduce pa 0
-#reduce pa 1
-#reduce pa 2
-#reduce pa 3
+#reduce zero_left_ident_add_nat 0
+#reduce zero_left_ident_add_nat 1
+#reduce zero_left_ident_add_nat 2
+#reduce zero_left_ident_add_nat 3
 
 
 
--- 0 is a left and right identity for nat +
-theorem zero_ident_nat_add :
+
+#check @nat.rec_on
+
+
+def base_fac := 1
+
+def step_fac : nat → nat → nat 
+| n' fac_n' := (n' + 1) * fac_n'
+
+def fac (n : nat) : nat :=
+begin
+apply nat.rec_on n,
+exact base_fac,
+exact step_fac,
+end
+
+def fac' : ℕ → ℕ 
+| 0 := 1
+| (nat.succ n') := (nat.succ n') * fac' n'
+
+#eval fac' 5
+
+#eval fac 5
+
+
+-- We now have that zero is an *additive identity for ℕ*
+#check zero_left_ident_add_nat
+#check zero_right_ident_add_nat
+
+theorem zero_ident_add_nat : 
   ∀ (a : ℕ), 
-    (0 + a = a) ∧
-    (a + 0 = a) :=
-begin
-assume a,
+    nat.add nat.zero a = a ∧
+    nat.add a nat.zero = a :=
+begin 
+intro a,
 split,
-apply pa,  -- inductive case by left_identity theorem
-apply rfl, -- base case is easyend
+apply (zero_left_ident_add_nat a),
+apply (zero_right_ident_add_nat a),
 end
 
 
-theorem zero_ident_nat_add' : ∀ (a : ℕ), (0:nat).add a = a ∧ a.add 0 = a :=
+
+-- The induction principle for natural numbers.
+#check @nat.rec_on
+
+-- Applying nat.rec_on 
+def nat_zero_ident (a : nat) : P a := nat.rec_on a p0 step
+#check nat_zero_ident 5
+#reduce nat_zero_ident 5  -- proof terms often "unreadable"
+
+
+example : ∀ a, P a :=
+begin
+unfold P,
+assume a,
+apply nat.rec_on a,
+exact rfl,    -- base case
+exact step,   -- we use already proven lemma
+end
+
+-- You can also use Lean's *induction tactic*.
+example : ∀ a, P a :=
+begin
+assume a,
+unfold P,
+induction a with a' ih, -- applies axiom
+exact rfl,              -- base case
+simp [nat.add],
+assumption,
+end
+
+
+
+#check nat.mul
+/-
+def mul : nat → nat → nat
+| a 0     := 0
+| a (b+1) := (mul a b) + a
+-/
+
+theorem mul_one_ident_nat : 
+    ∀ (a : ℕ), 
+    (nat.mul 1 a = a) ∧
+    (nat.mul a 1 = a)  :=
 begin
 assume a,
 split,
-apply pa,
-apply rfl,
+
+-- left conjunct: nat.mul 1 a = a
+induction a with a' ih,
+-- base case
+simp [nat.mul], 
+-- inductive case
+simp [nat.mul],
+rw ih,
+
+-- right conjunct: nat.mul a 1 = a
+simp [nat.mul],
+apply zero_left_ident_add_nat,
 end
 
--- KEVIN: Why these complexities around notation?
+
+theorem nat_add_assoc : 
+  ∀ (a b c), 
+    nat.add a (nat.add b c) =
+    nat.add (nat.add a b) c :=
+begin
+assume a b c,
+induction c with c' ih,
+
+-- base lemma
+simp [nat.add],
+
+-- induction lemma
+simp [nat.add],
+assumption,
+end
+
+-- Yay, that's really cool!
+
+-- EXERCISE: Prove that nat.mul is associative
+
+/-
+In the middle of trying to prove this theorem, we run into the need
+for another theorem, not yet proved: one that shows that nat add and
+mul follow the distributive law for multiplication on the left over 
+a sum. We present here an example of how one can assume a proof of a
+lemma using sorry, with the intent of filling it in later. This gives
+you a practical approach to top-down proof construction, just like 
+you might follow a discipline of top-down program construction.  
+-/
+theorem nat_mul_assoc : 
+  ∀ (a b c : ℕ), nat.mul a (nat.mul b c) = nat.mul (nat.mul a b) c :=
+begin
+assume a b c,
+induction c with c' ih,
+-- base case
+simp [nat.mul],
+-- inductive case
+simp [nat.mul],
+rw <- ih,
+have mul_distrib_add_nat_left : 
+  ∀ x y z, 
+    nat.mul x (nat.add y z) = 
+    nat.add (nat.mul x y) (nat.mul x z) := 
+    sorry,
+apply mul_distrib_add_nat_left,
+end
+
+-- We leave the proof of left distributivity as an exercise (not trivial)
+lemma mul_distrib_add_nat_left : 
+  ∀ x y z, 
+    nat.mul x (nat.add y z) = 
+    nat.add (nat.mul x y) (nat.mul x z) := sorry
 
 
 
 universe u
 
--- general structure
-structure nat_monoid : Type := mk::
-  (op : nat → nat → nat)
-  (id : ℕ)
+-- general structure (not we've removed "nat" from the name)
+structure monoid {α : Type} : Type := mk::
+  (op : α  → α  → α )
+  (id : α )
   (e : ∀ a, op id a = a ∧ op a id = a)
   (assoc: ∀ a b c, op a (op b c) = op (op a b) c)
 
-def nat_add_monoid := nat_monoid.mk   nat.add 0 zero_ident_nat_add' sorry  
-def nat_add_monoid' := nat_monoid.mk  nat.add 1 zero_ident_nat_add' sorry  -- yay caught error
-def nat_mul_monoid := nat_monoid.mk   nat.mul 1 sorry sorry                -- no checking here 
+def nat_add_monoid := monoid.mk nat.add 0 zero_ident_add_nat nat_add_assoc  
+def nat_add_monoid' := monoid.mk nat.add 1 zero_ident_add_nat nat_add_assoc -- caught error
+def nat_mul_monoid := monoid.mk nat.mul 1 mul_one_ident_nat nat_mul_assoc   -- sorry 
 
--- EXERCISES: Construct proofs to fill in the *sorry*s.
+#reduce nat_add_monoid
+#reduce nat_mul_monoid
 
 -- Monoid structure instances 
 #reduce foldr nat_add_monoid.op nat_add_monoid.id [1,2,3,4,5]
@@ -193,51 +300,142 @@ def nat_mul_monoid := nat_monoid.mk   nat.mul 1 sorry sorry                -- no
 
 
 -- A version of foldr that takes a monoid object and uses its op and e values
-def foldr' {α β : Type} : nat_monoid → list nat → nat
-| (nat_monoid.mk op e _ _) l := foldr op e l
+def foldr' {α : Type} : @monoid α → list α → α  
+| (monoid.mk op e _ _) l := foldr op e l
 
 -- Safe use of monoid instances folds
 #reduce foldr' nat_add_monoid [1,2,3,4,5]
 #reduce foldr' nat_mul_monoid [1,2,3,4,5]
 
 
-#check @nat.rec_on
+def monoid_list_append' {α : Type}: @monoid (list α) :=
+  monoid.mk list.append [] sorry sorry 
 
-def nat_zero_ident (a : nat): P a := nat.rec_on a p0 step
-#check nat_zero_ident 5
-#reduce nat_zero_ident 5
-
+#eval foldr' monoid_list_append' [[1,2,3],[4,5,6],[7,8,9]]
 
 
--- proving right identity is trivial just as for addition
-example (α : Type) : ∀ (l : list α), list.nil ++ l = l :=
+
+-- To be proved
+theorem nil_identity_append_list {α : Type u}: 
+  ∀ (l : list α), 
+    list.append list.nil l = l ∧ 
+    list.append l list.nil = l := sorry
+
+-- Here again is the definition list.append (++). 
+#check @list.append
+/-
+def append : list α → list α → list α
+| []       l := l
+| (h :: s) t := h :: (append s t)
+-/
+
+
+def list_nil_right_ident_for {α : Type u} (l : list α) :=
+  list.append l [] = l
+
+
+lemma list_base {α : Type u} : 
+  list_nil_right_ident_for ([] : list α) :=
+begin
+-- unfold list_nil_right_ident_for,
+exact rfl,  -- Lean unfolds name automatically here
+end
+
+-- Now let's prove a step lemma.
+#check @list.rec_on
+
+lemma list_step {α : Type u} : 
+  -- given any new head element, hd
+  (Π (hd : α) 
+  -- and any existing list, l'
+     (l' : list α), 
+  -- if [] is a right identity for l'
+     list_nil_right_ident_for l' → 
+  -- then it's a right identity for one-bigger list
+     list_nil_right_ident_for (hd :: l')) :=
+begin
+unfold list_nil_right_ident_for,
+assume hd l' ih,
+simp [list.append], -- simplify using second rule of append
+assumption,         -- the induction hypothesis finishes it off QED
+end 
+
+-- Now we build a recursive function to return proof for any l
+#check list_base
+
+def nil_right_ident_append_list' {α : Type} : ∀ (l' : list α), list.append l' [] = l'
+| (list.nil) := list_base
+| (h::t) := list_step h t (nil_right_ident_append_list' t)
+
+-- Seems to work!
+#check nil_right_ident_append_list' [1,2]
+
+
+
+
+#check @list.rec_on
+/-
+nat.rec_on :                    
+  Π {motive : ℕ → Sort u_1}   -- property or return value type
+    (n : ℕ),                  -- input argument value
+    motive 0 →                -- answer for base case
+    (Π ('n : ℕ),              -- step function (higher-order!)
+      motive n' → 
+      motive n'.succ
+    ) → 
+  motive n                    -- return values, by recursion
+-/
+
+#check @list.rec_on
+/-
+list.rec_on :
+  Π {T : Type u_2}                -- for any list element type
+    {motive : list T → Sort u_1}  -- property or return type
+    (n : list T),                 -- input argument value  
+    motive list.nil →             -- proof/value for base case
+    (Π (hd : T)                   -- step function: understand it
+       (tl : list T), 
+       motive tl → 
+       motive (hd :: tl)) → 
+  motive n                        -- return value, by recursion
+
+
+QUESTION: What new element is present in the rule for lists
+that isn't involved in the rule for natural numbers?
+
+
+
+/-
+def append : list α → list α → list α
+| []       l := l
+| (h :: s) t := h :: (append s t)
+-/
+
+
+theorem nil_left_ident_append_list (α : Type) : ∀ (l : list α), list.nil ++ l = l :=
 begin
 assume l,
 simp [list.append],
 end
 
 
-def nil_left_ident_app (α : Type) : ∀ (l : list α), l ++ list.nil = l :=
+def nil_right_ident_append (α : Type) : 
+  ∀ (l : list α), l ++ [] = l :=
 begin
 assume l,
-cases l with h t,
--- base case
-simp [list.append],   -- uses first rule
--- recursive case
-simp [list.append],   -- why does this work?
-end 
+induction l,
+simp [list.append],
+simp,
+end
 
--- Here's another formal demonstration of the same point
-variables (α : Type) (a : α) (l : list α) 
-example: list.nil ++ l = l := by simp    -- first rule
-example : l ++ list.nil  = l := by simp  -- by [simp] lemma in Lean library
+
 
 
 
 inductive le (n : nat): nat → Prop 
 -- n is an implicit firt argument to each constructor
-| refl : le /-n-/ n     
-| step : ∀ m, le /-n-/ m → le /-n-/ m.succ
+| refl : le (n) n     
+| step : ∀ m, le (n) m → le (n) m.succ
 
 -- you can see it in the types of the constructors
 #check @le.refl

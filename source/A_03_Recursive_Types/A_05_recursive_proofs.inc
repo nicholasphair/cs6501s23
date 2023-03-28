@@ -63,10 +63,10 @@ using *rfl*.
 
 .. code-block:: lean
 
-  -- and a proof
-  example : ∀ (n : ℕ), nat.add n 0 = n :=
+  -- and a proof, zero on the right
+  example : ∀ (a : ℕ), nat.add a nat.zero = a :=
   begin
-  assume n,
+  assume a,
   simp [nat.add],
   end
 
@@ -117,6 +117,7 @@ on *n*. That doesn't work either, as we see now.
   -- basically back where we started; stuck.
   end
 
+
 A Solution
 ~~~~~~~~~~
 
@@ -141,7 +142,9 @@ Let's define *(P a)* to be the proposition that
 
 .. code-block:: lean
 
-  def P (a : ℕ) : Prop := 0 + a = a
+  
+  -- The property we want to prove is universal
+  def P (a : ℕ) : Prop := nat.add nat.zero a = a
   
   #check P      -- nat → Prop   -- property/predicate
 
@@ -158,8 +161,8 @@ a general approach.)
   theorem p0 : P 0 := 
   begin
   unfold P,         -- expand definition of P
-                    -- Lean applies def'n of add
-                    -- and rfl to finish off proof
+  simp [nat.add],        -- rfl to finish off proof
+  
   end
 
 That was easy but it doesn't get us very far. We
@@ -171,72 +174,52 @@ In fact we can.
 
   theorem p1 : P 1 := 
   begin
-  -- add proof p0 to local context for clarity
-  have p0 := p0,
-  -- unfold definition of P in P 0
-  unfold P at p0,
-  -- rewrite goal by def'n of P
-  show 0 + 1 = 1,
-  /-
-  The challenge is now clear. From a proof
-  that 0 is a left identity for 0 can we build
-  a proof that 0 is a left identity for one?
-  The solution relies on two crucial insights.
-  
-  First: we can use the *second* axiom of *add*
-  to rewrite the goal from *add 0 (succ 1)* to 
-  *succ (add 0 0)*. Be *sure* sure you understand
-  this point. Go back to the definition of *add*,
-  look at the second rule, and be sure you see 
-  that it enables exactly this rewriting. 
-  The new goal to prove is then:: 
-  -/ 
-  show (1 + (0 + 0)) = 1,  -- see def'n of add!
-  /-
-  Second, we can use our proof, p0 : (P 0), that 
-  zero is a left identity for 0 on the right, to 
-  rewrite 0 + 0 as 0. We're then left with the 
-  goal to show that *1 + 0 = 1*, with zero *on 
-  the right*, which Lean then proves for us 
-  automatically by applying the first rule of 
-  addition. 
-  -/
-  rw p0,
-  end  
+  unfold P,
+  have ih := p0,
+  unfold P at ih,
+  show nat.succ (nat.add nat.zero nat.zero) = 1, -- first rule of add
+  rw ih,
+  end
 
-So wow we have proofs for two cases: *P 0* and 
-*P 1*. Can we pull the same trick again, using 
-the proof of *P 1* to build a proof of *(P 2)*?
-Yes, we can!
+Lean provides some automation here. First it
+applies the second rule of nat.add to change
+the goal to (in effect) 1 + (0 + 0) = 1; then 
+it (in effect) uses p0 to rewrite 0 + 0 as 0, 
+then it uses the first rule to rewrite 1 + 0
+as 1 (zero on the right), and finally rfl to
+polish off the proof. 
+
+From a proof that 0 is a *left* identity for 
+0 can we build a proof that 0 is a left identity 
+for one! So from a proof of P 1, can we now build
+a proof of P 2? Yes, we can!
 
 .. code-block:: lean
 
   theorem p2 : P 2  :=
   begin
-  have p1 := p1,    -- just for clarity
-  unfold P at p1,
-  show 1 + (0 + 1) = 2,
-  rewrite p1,
+  unfold P,
+  have ih := p1,
+  show 1 + (0 + 1) = 2, -- second rule of add
+  unfold P at ih,       -- use ih, Lean automation
   end 
-  
-  -- Wow, can we just keep doing this?
   
   theorem p3 : P 3  :=
   begin
-  have p2 := p2,    -- just for clarity
-  unfold P at p2,
+  unfold P,
+  have ih := p2,    -- just for clarity
   show 1 + (0 + 2) = 3,
-  rewrite p2,
+  unfold P at ih,
   end 
   
-  theorem zero_left_id_four : P 4  :=
+  theorem p4 : P 4  :=
   begin
-  have p3 := p3,    -- just for clarity
-  unfold P at p3,
+  have ih := p3,    -- just for clarity
   show 1 + (0 + 3) = 4,
-  rewrite p3,
+  unfold P at ih,
   end 
-  /- Now it looks like that from any nat, *a' : nat*, 
+  
+  /- It looks like that from any nat, *a' : nat*, 
   and a proof of *P a'* we can prove *P (a' + 1)*.
   -/
 
@@ -282,38 +265,38 @@ accomplished by recursion.
 
 .. code-block:: lean
 
-  def pa : ∀ (a : ℕ), (nat.add 0 a = a) 
+  -- formerly called pa (in class)
+  def zero_left_ident_add_nat : ∀ (a : ℕ), (nat.add 0 a = a) 
   | 0 := p0
-  | (nat.succ a') := (step a' (pa a'))
-  
-  #check pa   
+  | (nat.succ a') := (step a' (zero_left_ident_add_nat a'))
 
--- This function proves ∀ a, P a. It's a universal
-generalization so we can apply it to any specific value
-of *a* to get a proof that zero is a left identity for that
-particular *a*.  
+The function, zero_left_ident_add, proves ∀ a, P a! 
+It's a universal generalization, so we can apply it to any 
+specific value of *a* to get a proof that zero is a left 
+identity for that particular *a*.  
 
 .. code-block:: lean
 
-  #reduce pa 0
-  #reduce pa 1
-  #reduce pa 2
-  #reduce pa 3
+  #reduce zero_left_ident_add_nat 0
+  #reduce zero_left_ident_add_nat 1
+  #reduce zero_left_ident_add_nat 2
+  #reduce zero_left_ident_add_nat 3
 
-Moreover, by inspecting the (semi-unreadable) proof terms, 
-you can see that the proof term for each value, *a,* includes 
-within it a proof term for the next smaller value, all the way 
-down to the proof term for zero. Just as larger nat values 
-are built from, and incorporate, smaller ones, down to zero,
-so do proofs of *P a* for larger value of *a* build on and
-incorporate proofs of *P a'* for smaller values of *a',* all 
-the way down to a proof of *P 0*. We thus construct proofs of 
-*P a* for any *a* inductively, just as we define the natural
-numbers themselves inductively. This method is called proof
-by induction.
+Moreover, by inspecting the (semi-unreadable) proof 
+terms, you can see that the proof term for each value, 
+*a,* includes within it a proof term for the next smaller 
+value, all the way down to the proof term for zero. Just 
+as larger nat values are built from, and incorporate, 
+smaller ones, down to zero, so do proofs of *P a* for
+larger value of *a* build on and incorporate proofs of 
+*P a'* for smaller values of *a',* all the way down to 
+a proof of *P 0*. We thus construct proofs of *P a* for
+any *a* inductively, just as we define the natural numbers
+themselves inductively. This method is called *proof by 
+induction*.
 
-Summary So Far
-~~~~~~~~~~~~~~
+Summary: Proof by Induction
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Let's pull the pieces of this story together. We started by 
 specifying a property, *P a := 0 + a = 0*, of natural numbers. 
@@ -347,65 +330,256 @@ natural numbers.
 
 .. code-block:: lean
 
-  -- 0 is a left and right identity for nat +
-  theorem zero_ident_nat_add :
+  
+  #check @nat.rec_on
+  
+  
+  def base_fac := 1
+  
+  def step_fac : nat → nat → nat 
+  | n' fac_n' := (n' + 1) * fac_n'
+  
+  def fac (n : nat) : nat :=
+  begin
+  apply nat.rec_on n,
+  exact base_fac,
+  exact step_fac,
+  end
+  
+  def fac' : ℕ → ℕ 
+  | 0 := 1
+  | (nat.succ n') := (nat.succ n') * fac' n'
+  
+  #eval fac' 5
+  
+  #eval fac 5
+
+
+Theorem: 0 is identity for ⟨ℕ, +⟩ 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+.. code-block:: lean
+
+  -- We now have that zero is an *additive identity for ℕ*
+  #check zero_left_ident_add_nat
+  #check zero_right_ident_add_nat
+  
+  theorem zero_ident_add_nat : 
     ∀ (a : ℕ), 
-      (0 + a = a) ∧
-      (a + 0 = a) :=
+      nat.add nat.zero a = a ∧
+      nat.add a nat.zero = a :=
+  begin 
+  intro a,
+  split,
+  apply (zero_left_ident_add_nat a),
+  apply (zero_right_ident_add_nat a),
+  end
+
+We've now made a major advance toward being able to formalize
+our first important algebraic structure, that of a *monoid*.
+In particular, we're now well along to showing that ⟨ℕ, 0, +⟩ 
+is a monoid. We still have some unresolved issues to address,
+however.
+
+- To be a monoid, the given binary operator must be associative
+- We'll want monoids with other binary operations, e.g., ⟨ℕ, 1, *⟩ 
+- We'll want monoids over other types, e.g, ⟨list α, [], append⟩ 
+
+Many of the proofs we'll need will rely on the induction method.
+To get there, we need to understand how induction is a *general*
+method of proof construction. It generalizes:
+
+- from the property of *having 0 as an identity for +* to any property of natural numbers
+- from properties involving natural number to properties involving other types (e.g., list)
+
+The plan going forward is:
+
+- induction axioms (recursive proof building functions) *in general*
+- a proof that nat + is associative, giving us what we need for a ⟨ℕ, +, 0⟩ monoid
+- proofs that 1 is a * identity, and that * associative, giving us a ⟨ℕ, *, 1⟩ monoid
+- generalize to other types, with ⟨list α, append, []⟩ as a monoid on lists example 
+- a final version of foldr, extending the binary operation of any monoid to n-ary 
+
+Induction Axiom for ℕ 
+~~~~~~~~~~~~~~~~~~~~~
+
+The principle we've developed is available as an axiom 
+generated from the definition of the nat data type. The
+name of the principle is *nat.rec_on*. Applying it to the
+smaller lemmas yeilds a proof of the generalization. 
+
+If you prove the lemmas first, in a bottom-up proof style,
+you can just apply the induction principle to a value, *a*,
+and to the two proofs, to get a proof of *P a*. Or you can
+apply the axiom giving only nat value as an argument while
+leaving the proof arguments to be provided as proofs of 
+subgoals. 
+
+.. code-block:: lean
+
+  -- The induction principle for natural numbers.
+  #check @nat.rec_on
+
+A top-down approach is more typical, wherein we apply the 
+induction axiom for natural numbers to construct the overall
+proof we need, leaving the smaller lemmas to be proved as
+subgoals. 
+
+.. code-block:: lean
+
+  example : ∀ a, P a :=
+  begin
+  unfold P,
+  assume a,
+  apply nat.rec_on a,
+  exact rfl,    -- base case
+  exact step,   -- we use already proven lemma
+  end
+  
+  -- You can also use Lean's *induction tactic*.
+  example : ∀ a, P a :=
+  begin
+  assume a,
+  unfold P,
+  induction a with a' ih, -- applies axiom
+  exact rfl,              -- base case
+  simp [nat.add],
+  assumption,
+  end
+
+
+Theorem: 1 is identity for ⟨ℕ, *⟩  
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Here from Lean's library is the definition
+of natural number multiplication. Your job 
+is to prove that 1 is an identity (left and
+right identity) for ⟨ℕ, *⟩. Fill in the missing proof.
+
+.. code-block:: lean
+
+  #check nat.mul
+  /-
+  def mul : nat → nat → nat
+  | a 0     := 0
+  | a (b+1) := (mul a b) + a
+  -/
+  
+  theorem mul_one_ident_nat : 
+      ∀ (a : ℕ), 
+      (nat.mul 1 a = a) ∧
+      (nat.mul a 1 = a)  :=
   begin
   assume a,
   split,
-  apply pa,  -- inductive case by left_identity theorem
-  apply rfl, -- base case is easyend
+  
+  -- left conjunct: nat.mul 1 a = a
+  induction a with a' ih,
+  -- base case
+  simp [nat.mul], 
+  -- inductive case
+  simp [nat.mul],
+  rw ih,
+  
+  -- right conjunct: nat.mul a 1 = a
+  simp [nat.mul],
+  apply zero_left_ident_add_nat,
   end
-  
-  
-  theorem zero_ident_nat_add' : ∀ (a : ℕ), (0:nat).add a = a ∧ a.add 0 = a :=
+
+
+Theorems: ℕ + and * associative
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+In this section we'll first construct a proof, nat_add_assoc, 
+that nat.add is associative, then we'll do the same, under the
+name, nat_mul_assoc, showing that nat.mul is associative, too.
+
+
+.. code-block:: lean
+
+  theorem nat_add_assoc : 
+    ∀ (a b c), 
+      nat.add a (nat.add b c) =
+      nat.add (nat.add a b) c :=
   begin
-  assume a,
-  split,
-  apply pa,
-  apply rfl,
+  assume a b c,
+  induction c with c' ih,
+  
+  -- base lemma
+  simp [nat.add],
+  
+  -- induction lemma
+  simp [nat.add],
+  assumption,
   end
   
-  -- KEVIN: Why these complexities around notation?
+  -- Yay, that's really cool!
+  
+  -- EXERCISE: Prove that nat.mul is associative
+  
+  /-
+  In the middle of trying to prove this theorem, we run into the need
+  for another theorem, not yet proved: one that shows that nat add and
+  mul follow the distributive law for multiplication on the left over 
+  a sum. We present here an example of how one can assume a proof of a
+  lemma using sorry, with the intent of filling it in later. This gives
+  you a practical approach to top-down proof construction, just like 
+  you might follow a discipline of top-down program construction.  
+  -/
+  theorem nat_mul_assoc : 
+    ∀ (a b c : ℕ), nat.mul a (nat.mul b c) = nat.mul (nat.mul a b) c :=
+  begin
+  assume a b c,
+  induction c with c' ih,
+  -- base case
+  simp [nat.mul],
+  -- inductive case
+  simp [nat.mul],
+  rw <- ih,
+  have mul_distrib_add_nat_left : 
+    ∀ x y z, 
+      nat.mul x (nat.add y z) = 
+      nat.add (nat.mul x y) (nat.mul x z) := 
+      sorry,
+  apply mul_distrib_add_nat_left,
+  end
+  
+  -- We leave the proof of left distributivity as an exercise (not trivial)
+  lemma mul_distrib_add_nat_left : 
+    ∀ x y z, 
+      nat.mul x (nat.add y z) = 
+      nat.add (nat.mul x y) (nat.mul x z) := sorry
   
 
 
-Monoids and Safe Foldr
-~~~~~~~~~~~~~~~~~~~~~~
+Monoids and Foldr
+~~~~~~~~~~~~~~~~~
 
-This proof is a significant accomplishment. It gives us a
-proof we'll need to formalize the fundamental mathematical 
-concept of a monoid: a structure comprising a collection of 
-values (here of some type, α), an associative binary operator 
-on such objects, and an identity element *for that operator*.  
+We can now define a general structure that we can instantiate to 
+formally represent either and additive or a multiplicative monoid 
+on the natural numbers. Indeed, we can generalize this definition
+to a monoid on values of any type for which a suitable operator and
+identity element can be defined.
 
-We don't have a proof of associativity of addition, but we do
-now have the tools to prove that nat.add is associative. We're
-thus close to being able to formally define a monoid structure
-on the natural numbers. 
-
-In particular, we can now define a general structure that we
-can instantiate to formally represent the additive monoid on 
-the natural numbers.
 
 .. code-block:: lean
 
   universe u
   
-  -- general structure
-  structure nat_monoid : Type := mk::
-    (op : nat → nat → nat)
-    (id : ℕ)
+  -- general structure (not we've removed "nat" from the name)
+  structure monoid {α : Type} : Type := mk::
+    (op : α  → α  → α )
+    (id : α )
     (e : ∀ a, op id a = a ∧ op a id = a)
     (assoc: ∀ a b c, op a (op b c) = op (op a b) c)
   
-  def nat_add_monoid := nat_monoid.mk   nat.add 0 zero_ident_nat_add' sorry  
-  def nat_add_monoid' := nat_monoid.mk  nat.add 1 zero_ident_nat_add' sorry  -- yay caught error
-  def nat_mul_monoid := nat_monoid.mk   nat.mul 1 sorry sorry                -- no checking here 
+  def nat_add_monoid := monoid.mk nat.add 0 zero_ident_add_nat nat_add_assoc  
+  def nat_add_monoid' := monoid.mk nat.add 1 zero_ident_add_nat nat_add_assoc -- caught error
+  def nat_mul_monoid := monoid.mk nat.mul 1 mul_one_ident_nat nat_mul_assoc   -- sorry 
   
-  -- EXERCISES: Construct proofs to fill in the *sorry*s.
+  #reduce nat_add_monoid
+  #reduce nat_mul_monoid
   
   -- Monoid structure instances 
   #reduce foldr nat_add_monoid.op nat_add_monoid.id [1,2,3,4,5]
@@ -413,65 +587,208 @@ the natural numbers.
   
   
   -- A version of foldr that takes a monoid object and uses its op and e values
-  def foldr' {α β : Type} : nat_monoid → list nat → nat
-  | (nat_monoid.mk op e _ _) l := foldr op e l
+  def foldr' {α : Type} : @monoid α → list α → α  
+  | (monoid.mk op e _ _) l := foldr op e l
   
   -- Safe use of monoid instances folds
   #reduce foldr' nat_add_monoid [1,2,3,4,5]
   #reduce foldr' nat_mul_monoid [1,2,3,4,5]
 
-Exercizzes
-~~~~~~~~~~
-
-- Construct a proof, nat_add_assoc, that nat.add is associative.
-- Construct_a_proof, nat_mul_ident, that 1 is an identity element for multiplication
-- Construct a proof, nat_mul_assoc, that nat.mul is associative.
-- Fill the *sorry* placeholders using these proofs
-
-
-In the next section, we'll see how to generalize P 
-to any property of natural numbers, and then how to
-generalize proof by induction to other types than
-nat. 
-
-Induction Axiom
-~~~~~~~~~~~~~~~
-
-The principle we've developed is available as an axiom 
-generated from the definition of the nat data type. The
-name of the principle is nat.rec_on. Applying it to the
-smaller lemmas yeilds a proof of the generalization.
+If we ignore the fact that we don't yet have proofs of the
+monoid laws for ⟨list α, [], list.append⟩ we can actually go
+ahead and see that it's going to work.
 
 .. code-block:: lean
 
-  #check @nat.rec_on
+  def monoid_list_append' {α : Type}: @monoid (list α) :=
+    monoid.mk list.append [] sorry sorry 
+  
+  #eval foldr' monoid_list_append' [[1,2,3],[4,5,6],[7,8,9]]
 
-Induction Generalized 
----------------------
+All that remains is to provide the requisite proofs that 
+append and nil satisfy the *monoid laws*. Unlike the proofs
+of identities and associativity for natural number operations,
+however, we now need to show that [] is an identity for *list*
+append and that append is associative. If proof by induction 
+worked as well for lists as for natural numbers we'd be all
+set. As we'll see next, we're in luck. 
 
-UNDER CONSTRUCTION FROM HERE ON DOWN.
+Induction Axioms
+----------------
 
-Just as we will need a proof that 0 is not only a right
-identity for nat.add (by the first axiom) but also a left
-identity (a theorem proved by induction), so will need a
-proof that nil is not only a right but also a left identity
-for the list append operation.  
+In this chapter, we will meet the idea that there is
+an induction axiom for *every* inductive definition. 
+We'll start by showing that our reasoning about 0
+being an identity for nat.add extends directly to
+showing that [] is an identity (left and right) for
+list.append. We'll then discuss the general case.
 
-Here's the easy case first. From this proof you can infer
-that the list.append operation (with infix notation ++) has
-a rule/axiom that states that l ++ nil := l for any l. 
+Theorem: [] list append identity  
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Our overall aim is to show that ⟨list α, [], ++⟩ is
+a monoid. Then we'll be able to use foldr to extend
+++ to an operation that will append any number of
+lists as long as they are themselves arranged in a
+list of lists. 
+
+We therefore need to show that [] is an identity on
+the left and right for append (++), and that append
+is associative. Let's take the first theorem here:
+[] is an identity for ++. 
+
+.. code-block:: lean
+
+  -- To be proved
+  theorem nil_identity_append_list {α : Type u}: 
+    ∀ (l : list α), 
+      list.append list.nil l = l ∧ 
+      list.append l list.nil = l := sorry
+  
+  -- Here again is the definition list.append (++). 
+  #check @list.append
+  /-
+  def append : list α → list α → list α
+  | []       l := l
+  | (h :: s) t := h :: (append s t)
+  -/
+
+By definition, list.nil is a left identity, but as
+with nat.add, there's no rule telling us that [] is
+a right identity. It thus appears (and is the case)
+that we will have to prove that [] is an identity on
+the right by induction.
+
+Let's think about what the induction will look like.
+It will be induction on the left argument to append.
+First we'll need a proof that [] is a right identity
+for [] on the left. Then we'll need to show that *if*
+for any list, l' on the left, [] is a right identity
+for l' then it's a right identity for any one-larger
+list. Such a one-larger list can be any list, hd::l', 
+where hd could be any element of type α. 
+
+Let's start with a bottom-up approach. We'll begin
+by formally defining the *property* of lists that
+we want to show is universal, that [] is a right
+identity for any list, l.
+
+.. code-block:: lean
+
+  def list_nil_right_ident_for {α : Type u} (l : list α) :=
+    list.append l [] = l
+  
+  
+  lemma list_base {α : Type u} : 
+    list_nil_right_ident_for ([] : list α) :=
+  begin
+  -- unfold list_nil_right_ident_for,
+  exact rfl,  -- Lean unfolds name automatically here
+  end
+  
+  -- Now let's prove a step lemma.
+  #check @list.rec_on
+  
+  lemma list_step {α : Type u} : 
+    -- given any new head element, hd
+    (Π (hd : α) 
+    -- and any existing list, l'
+       (l' : list α), 
+    -- if [] is a right identity for l'
+       list_nil_right_ident_for l' → 
+    -- then it's a right identity for one-bigger list
+       list_nil_right_ident_for (hd :: l')) :=
+  begin
+  unfold list_nil_right_ident_for,
+  assume hd l' ih,
+  simp [list.append], -- simplify using second rule of append
+  assumption,         -- the induction hypothesis finishes it off QED
+  end 
+  
+  -- Now we build a recursive function to return proof for any l
+  #check list_base
+  
+  def nil_right_ident_append_list' {α : Type} : ∀ (l' : list α), list.append l' [] = l'
+  | (list.nil) := list_base
+  | (h::t) := list_step h t (nil_right_ident_append_list' t)
+  
+  -- Seems to work!
+  #check nil_right_ident_append_list' [1,2]
+  
+
+
+Induction Axiom for Lists
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+We see again that there's nothing myseterious about proof by induction.
+If we have base values/proofs and step functions to build next-bigger 
+ones, and we can have a function that (using recursion on these elements)
+computes a value/proof for any given input value, and thus for all values
+of the input type. 
+
+Proof by induction is done by functions that compute results using
+recursion on given base values and step functions.  Every inductive
+axiom can be understood as a proof of universal generalization that
+asserts that every value of some input type has a corresponging result
+value of type. These return values can be proofs of properties or they
+can be function return values of any type. 
+
+Let's look at and compare and contrast the induction axioms (they're 
+just higher order functions!) for the nat and list α types. We'll then 
+show how the same ideas developed in the last example apply directly 
+as well to induction on list values. 
+
+.. code-block:: lean
+
+  #check @list.rec_on
+  /-
+  nat.rec_on :                    
+    Π {motive : ℕ → Sort u_1}   -- property or return value type
+      (n : ℕ),                  -- input argument value
+      motive 0 →                -- answer for base case
+      (Π ('n : ℕ),              -- step function (higher-order!)
+        motive n' → 
+        motive n'.succ
+      ) → 
+    motive n                    -- return values, by recursion
+  -/
+  
+  #check @list.rec_on
+  /-
+  list.rec_on :
+    Π {T : Type u_2}                -- for any list element type
+      {motive : list T → Sort u_1}  -- property or return type
+      (n : list T),                 -- input argument value  
+      motive list.nil →             -- proof/value for base case
+      (Π (hd : T)                   -- step function: understand it
+         (tl : list T), 
+         motive tl → 
+         motive (hd :: tl)) → 
+    motive n                        -- return value, by recursion
+  
+  
+  QUESTION: What new element is present in the rule for lists
+  that isn't involved in the rule for natural numbers?
+
+Once again we'll have to show *[]* is both a left and 
+right identity for append, where one proof is by the 
+definition of append and the other is by induction. We'll 
+also need a proof that *list.append* is associative: 
+*∀ (l m n : list α), (l ++ m) ++ n = l ++ (m ++ n).  
 
 Here's the definition of list.append.
-It asserts that [] is a left identity axiomatically. 
-
-def append : list α → list α → list α
-| []       l := l
-| (h :: s) t := h :: (append s t)
+You can see it defines [] as a left identity for any list. 
 
 .. code-block:: lean
 
-  -- proving right identity is trivial just as for addition
-  example (α : Type) : ∀ (l : list α), list.nil ++ l = l :=
+  /-
+  def append : list α → list α → list α
+  | []       l := l
+  | (h :: s) t := h :: (append s t)
+  -/
+  
+  
+  theorem nil_left_ident_append_list (α : Type) : ∀ (l : list α), list.nil ++ l = l :=
   begin
   assume l,
   simp [list.append],
@@ -489,36 +806,33 @@ we can rewrite nil ++ h::t as h::(nil ++ t), where we can
 obtain (and then us) a proof that nil ++ t = t by recursion,
 terminating when t =nil. 
 
-Fortunately, Lean's library already contains a proof that
-nil is a right identity, and it's annotated as *[simp]*,
-which means that the *simp* tactic will try to use it to
-prove our goal. In other words, we can use [simp] to prove
-the harder case precisely because someone else has already
-done the work for us; and they did it recursively just as
-we did to show that 0 is a right identity for addition. 
-
 .. code-block:: lean
 
-  def nil_left_ident_app (α : Type) : ∀ (l : list α), l ++ list.nil = l :=
+  def nil_right_ident_append (α : Type) : 
+    ∀ (l : list α), l ++ [] = l :=
   begin
   assume l,
-  cases l with h t,
-  -- base case
-  simp [list.append],   -- uses first rule
-  -- recursive case
-  simp [list.append],   -- why does this work?
-  end 
-  
-  -- Here's another formal demonstration of the same point
-  variables (α : Type) (a : α) (l : list α) 
-  example: list.nil ++ l = l := by simp    -- first rule
-  example : l ++ list.nil  = l := by simp  -- by [simp] lemma in Lean library
+  induction l,
+  simp [list.append],
+  simp,
+  end
 
 
-Induction Axioms
-----------------
+Theorem: monoid (list α)
+~~~~~~~~~~~~~~~~~~~~~~~~
 
-YOU MAY STOP READING HERE. THE REMAINDER IS STILL *UNDER CONSTRUCTION.*
+The work you've done until now should have you prepared to finish off
+the definition of a monoid instance for list α, [], list.append. You need
+the following:
+
+- a proof that list.append is associative
+- to package up the elements you now have into a finished monoid instance
+- tests passing this monoid to foldr to see it doing the right things
+
+This is your homework. You should try it by yourself, for sure, and put strong
+effort into solving it. If you end up fruitlessly stuck, you may go ahead and
+talk to others, but take the minimal input needed to get unstuck. Maximize your
+learning and understanding.
 
 Inductive Families
 ------------------
@@ -529,8 +843,8 @@ Coming soon.
 
   inductive le (n : nat): nat → Prop 
   -- n is an implicit firt argument to each constructor
-  | refl : le /-n-/ n     
-  | step : ∀ m, le /-n-/ m → le /-n-/ m.succ
+  | refl : le (n) n     
+  | step : ∀ m, le (n) m → le (n) m.succ
   
   -- you can see it in the types of the constructors
   #check @le.refl
