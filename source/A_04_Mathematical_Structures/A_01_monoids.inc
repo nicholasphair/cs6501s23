@@ -279,7 +279,7 @@ at function application time. Here are revised versions of our foldr functions.
   | list.nil := match m with (mul_monoid.mk op e _ _) := e end
   | (h::t) := match m with (mul_monoid.mk op e _ _) := m.op h (mul_foldr t) end
   
-  def  add_foldr {α : Type} [m : add_monoid α] : list α → α 
+  def add_foldr {α : Type} [m : add_monoid α] : list α → α 
   | list.nil := match m with (add_monoid.mk op e _ _) := e end
   | (h::t) := match m with (add_monoid.mk op e _ _) := m.op h (add_foldr t) end
 
@@ -296,6 +296,8 @@ instance arguments.
   #eval add_foldr [1,2,3,4,5]                 -- op = nat.add
   #eval add_foldr [[1,2,3],[4,5,6],[7,8,9]]   -- op = list.append
   #eval mul_foldr [1,2,3,4,5]                 -- error: no instance available!
+  
+  
 
 
 Constraining type arguments
@@ -378,6 +380,9 @@ return in case one tries to compute the head of an empty list.
   
   #eval list_head ([] : list nat)             -- returns default nat!     
   #eval list_head ([] : list bool)            -- returns default bool!
+  
+  instance string_def : default_value string := default_value.mk ""
+  
   #eval list_head ([] : list string)          -- error: no default for string
   
   -- EXERCISE: define a default_value typeclass instance to fix that error
@@ -437,6 +442,10 @@ what library to import, use the online Lean mathlib reference.
   #check has_mul        -- as we've seen
   #check mul_one_class  -- extends has_one 
   #check has_one        -- arbitrary value called "one"
+  
+  
+  #check group
+  
   
   -- See documentation for how it all fits together. 
   
