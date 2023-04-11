@@ -1,6 +1,3 @@
-import algebra.group
-
-/- TEXT:
 *******
 Monoids
 *******
@@ -51,65 +48,63 @@ To formally specify our monoid of rotational symmetries of a regular
 triangle as a monoid, we'll need to represent the set of rotations
 and the composition operation, and we'll need to prove that these
 components satisfy the monoid laws.
-TEXT. -/
 
--- QUOTE:
--- We represent the set of monoid elements (rotations) as a type
-inductive rot_syms 
-| r0
-| r120
-| r240
+.. code-block:: lean
 
-open rot_syms
-
--- We represent the operation as a binary operation on this
-def rot_mul : rot_syms → rot_syms → rot_syms 
-| r0 r0 := r0
-| r0 r120 := r120
-| r0 r240 := r240
-| r120 r0 := r120
-| r120 r120 := r240
-| r120 r240 := r0
-| r240 r0 := r240
-| r240 r120 := r0
-| r240 r240 := r120
-
--- We need a proof that r0 is an identity for this operation
-
-theorem rot_left_ident : ∀ (r : rot_syms), rot_mul r0 r = r  :=
-begin
-assume r,
-cases r,
-repeat {exact rfl,}
-end 
-
-theorem rot_right_ident : ∀ (r : rot_syms), rot_mul r  r0 = r :=
-begin
-assume r,
-cases r,
-repeat {apply rfl},
-end 
-
--- And we need a proof that the operation is associative
-
-theorem rot_mul_assoc : 
-  ∀ (e1 e2 e3 : rot_syms), 
-    rot_mul (rot_mul e1 e2) e3 = rot_mul e1 (rot_mul e2 e3) :=
-begin
-assume e1 e2 e3,
-
-cases e1,
-repeat { 
-  cases e2,
+  -- We represent the set of monoid elements (rotations) as a type
+  inductive rot_syms 
+  | r0
+  | r120
+  | r240
+  
+  open rot_syms
+  
+  -- We represent the operation as a binary operation on this
+  def rot_mul : rot_syms → rot_syms → rot_syms 
+  | r0 r0 := r0
+  | r0 r120 := r120
+  | r0 r240 := r240
+  | r120 r0 := r120
+  | r120 r120 := r240
+  | r120 r240 := r0
+  | r240 r0 := r240
+  | r240 r120 := r0
+  | r240 r240 := r120
+  
+  -- We need a proof that r0 is an identity for this operation
+  
+  theorem rot_left_ident : ∀ (r : rot_syms), rot_mul r0 r = r  :=
+  begin
+  assume r,
+  cases r,
+  repeat {exact rfl,}
+  end 
+  
+  theorem rot_right_ident : ∀ (r : rot_syms), rot_mul r  r0 = r :=
+  begin
+  assume r,
+  cases r,
+  repeat {apply rfl},
+  end 
+  
+  -- And we need a proof that the operation is associative
+  
+  theorem rot_mul_assoc : 
+    ∀ (e1 e2 e3 : rot_syms), 
+      rot_mul (rot_mul e1 e2) e3 = rot_mul e1 (rot_mul e2 e3) :=
+  begin
+  assume e1 e2 e3,
+  
+  cases e1,
   repeat { 
-    cases e3,
-    repeat {exact rfl}},  
-  },
-end 
+    cases e2,
+    repeat { 
+      cases e3,
+      repeat {exact rfl}},  
+    },
+  end 
+  
 
--- QUOTE.
-
-/- TEXT:
 Monoid typeclass
 ----------------
 
@@ -120,19 +115,17 @@ notations and other operations) that come Lean's monoid and
 its underlying typeclass definitions. So let's look to see
 exactly what's needed to create our own monoid instance. 
 Here's Lean's definition of monoid.
-TEXT. -/
 
--- QUOTE:
-#check @monoid
-/-
-class monoid (M : Type u) extends semigroup M, mul_one_class M :=
-(npow : ℕ → M → M := npow_rec)
-(npow_zero' : ∀ x, npow 0 x = 1 . try_refl_tac)
-(npow_succ' : ∀ (n : ℕ) x, npow n.succ x = x * npow n x . try_refl_tac)
--/
--- QUOTE.
+.. code-block:: lean
 
-/- TEXT:
+  #check @monoid
+  /-
+  class monoid (M : Type u) extends semigroup M, mul_one_class M :=
+  (npow : ℕ → M → M := npow_rec)
+  (npow_zero' : ∀ x, npow 0 x = 1 . try_refl_tac)
+  (npow_succ' : ∀ (n : ℕ) x, npow n.succ x = x * npow n x . try_refl_tac)
+  -/
+
 We see that a monoid on a carrier set, *M* (here of rotations), will
 extend semi-group and mul_one_class typeclasses, so we'll need to go
 look at those. The typeclass itself requires an operation n_pow, which
@@ -152,17 +145,15 @@ fashion.
 
 Semigroup
 ---------
-TEXT. -/
 
--- QUOTE:
-#check @semigroup
-/-
-class semigroup (G : Type u) extends has_mul G :=
-(mul_assoc : ∀ a b c : G, a * b * c = a * (b * c))
--/
--- QUOTE.
+.. code-block:: lean
 
-/- TEXT: 
+  #check @semigroup
+  /-
+  class semigroup (G : Type u) extends has_mul G :=
+  (mul_assoc : ∀ a b c : G, a * b * c = a * (b * c))
+  -/
+
 We see that to define a semigroup instance we'll need an instance
 of has_mul, so let's look at that. 
 TEXT. 
@@ -170,16 +161,14 @@ TEXT.
 has_mul
 -------
 
-TEXT. -/
 
--- QUOTE:
-#check @has_mul
-/-
-class has_mul      (α : Type u) := (mul : α → α → α)
--/
--- QUOTE.
+.. code-block:: lean
 
-/- TEXT:
+  #check @has_mul
+  /-
+  class has_mul      (α : Type u) := (mul : α → α → α)
+  -/
+
 
 has_mul instance
 ----------------
@@ -188,15 +177,6 @@ Hooray, we have everything we need to define an instance of this
 typeclass, namely just a multiplication operator (mul) for objects
 in our monoid. That operator is rot_mul. (Note that you can define
 typeclass instances without giving them names, which is typical.)
-TEXT. -/
-
--- see instance constructor type
-#check has_mul.mk 
-
--- construct instance using anonymous constructor notation
-instance : has_mul rot_syms  := ⟨ rot_mul ⟩ 
-
-/- TEXT:
 
 You see here the use of angle-brackets to specify the field 
 values of a given structure. It's easier to use than has_mul.mk. 
@@ -207,24 +187,22 @@ semigroup instance
 Now we've got what we need to specify a semigroup typeclass
 instance, which simply adds the constraint (in the form of a
 proof) that the operator be associative.
-TEXT. -/
 
--- QUOTE:
--- check the constructor to see the required field values 
-#check @semigroup.mk 
-/-
-Π {G : Type u}                                -- carrier set implicit
-  (mul : G → G → G),                          -- operator
-  (∀ (a b c : G), a * b * c = a * (b * c)) →  -- proof of associativity 
-semigroup G
--/
+.. code-block:: lean
 
-instance : semigroup rot_syms := ⟨ rot_mul, rot_mul_assoc ⟩ 
-#check @mul_one_class
+  -- check the constructor to see the required field values 
+  #check @semigroup.mk 
+  /-
+  Π {G : Type u}                                -- carrier set implicit
+    (mul : G → G → G),                          -- operator
+    (∀ (a b c : G), a * b * c = a * (b * c)) →  -- proof of associativity 
+  semigroup G
+  -/
+  
+  instance : semigroup rot_syms := ⟨ rot_mul, rot_mul_assoc ⟩ 
+  #check @mul_one_class
+  
 
--- QUOTE. 
-
-/- TEXT:
 mul_one_class instance
 ----------------------
 
@@ -233,70 +211,66 @@ for mul_one_class, and as we'll now see, that in turn requires
 instances of has_one and has_mul. We aready have an instance of has_mul,
 so all we need to define now is has_one, which identities the identity
 element in the monoid, which will then be denoted by *1*. 
-TEXT. -/
 
--- QUOTE:
-#check @mul_one_class
-#check @has_one
-#check @has_mul 
+.. code-block:: lean
 
-/-
-class mul_one_class (M : Type u) extends has_one M, has_mul M :=
-(one_mul : ∀ (a : M), 1 * a = a)
-(mul_one : ∀ (a : M), a * 1 = a)
+  #check @mul_one_class
+  #check @has_one
+  #check @has_mul 
+  
+  /-
+  class mul_one_class (M : Type u) extends has_one M, has_mul M :=
+  (one_mul : ∀ (a : M), 1 * a = a)
+  (mul_one : ∀ (a : M), a * 1 = a)
+  
+  class has_one      (α : Type u) := (one : α)
+  -/
+  instance : has_one rot_syms := ⟨ r0 ⟩ 
+  
+  #check @mul_one_class.mk 
+  /-
+   Π {M : Type u} 
+     (one : M) 
+     (mul : M → M → M), 
+     (∀ (a : M), 1 * a = a) → 
+     (∀ (a : M), a * 1 = a) → 
+    mul_one_class M
+  -/
+  instance : mul_one_class rot_syms := 
+  ⟨ r0, rot_mul, rot_left_ident, rot_right_ident ⟩ 
+  
+  -- Finally we'll need a definition of npow
+  def rot_npow : ℕ → rot_syms → rot_syms 
+  | 0 x := 1
+  | (nat.succ n') x := rot_mul x (rot_npow n' x)
 
-class has_one      (α : Type u) := (one : α)
--/
-instance : has_one rot_syms := ⟨ r0 ⟩ 
-
-#check @mul_one_class.mk 
-/-
- Π {M : Type u} 
-   (one : M) 
-   (mul : M → M → M), 
-   (∀ (a : M), 1 * a = a) → 
-   (∀ (a : M), a * 1 = a) → 
-  mul_one_class M
--/
-instance : mul_one_class rot_syms := 
-⟨ r0, rot_mul, rot_left_ident, rot_right_ident ⟩ 
-
--- Finally we'll need a definition of npow
-def rot_npow : ℕ → rot_syms → rot_syms 
-| 0 x := 1
-| (nat.succ n') x := rot_mul x (rot_npow n' x)
--- QUOTE. 
-
-/- TEXT:
 Yay. We can now assemble our monoid instance. 
-TEXT. -/
 
--- QUOTE:
-#check @monoid.mk 
-/-
-Π {M : Type u_1} 
-  (mul : M → M → M),
-  (∀ (a b c : M), a * b * c = a * (b * c)) →
-  Π (one : M) 
-    (one_mul : ∀ (a : M), 1 * a = a) 
-    (mul_one : ∀ (a : M), a * 1 = a)
-    (npow : ℕ → M → M),
-      auto_param (∀ (x : M), npow 0 x = 1) (name.mk_string "try_refl_tac" name.anonymous) →
-      auto_param (∀ (n : ℕ) (x : M), npow n.succ x = x * npow n x) (name.mk_string "try_refl_tac" name.anonymous) →
-  monoid
--/
-instance : monoid rot_syms := 
-⟨
-  rot_mul,
-  rot_mul_assoc,
-  1,
-  rot_left_ident,
-  rot_right_ident,
-  rot_npow,
-⟩ 
--- QUOTE. 
+.. code-block:: lean
 
-/- TEXT:
+  #check @monoid.mk 
+  /-
+  Π {M : Type u_1} 
+    (mul : M → M → M),
+    (∀ (a b c : M), a * b * c = a * (b * c)) →
+    Π (one : M) 
+      (one_mul : ∀ (a : M), 1 * a = a) 
+      (mul_one : ∀ (a : M), a * 1 = a)
+      (npow : ℕ → M → M),
+        auto_param (∀ (x : M), npow 0 x = 1) (name.mk_string "try_refl_tac" name.anonymous) →
+        auto_param (∀ (n : ℕ) (x : M), npow n.succ x = x * npow n x) (name.mk_string "try_refl_tac" name.anonymous) →
+    monoid
+  -/
+  instance : monoid rot_syms := 
+  ⟨
+    rot_mul,
+    rot_mul_assoc,
+    1,
+    rot_left_ident,
+    rot_right_ident,
+    rot_npow,
+  ⟩ 
+
 What we get
 -----------
 
@@ -308,32 +282,30 @@ now define another version of foldr that takes a Lean
 monoid as an argument and extends its binary operator
 to n-ary, taking an arbitrary number of arguments in a
 list. 
-TEXT. -/
 
--- QUOTE:
+.. code-block:: lean
 
--- Notations!
-#reduce (1 : rot_syms)
-#reduce (r120 * 1)
-#reduce (r120 * r120)
+  
+  -- Notations!
+  #reduce (1 : rot_syms)
+  #reduce (r120 * 1)
+  #reduce (r120 * r120)
+  
+  -- foldr using monoid notation
+  def mul_foldr {α : Type} [monoid α] : list α → α
+  |  list.nil := 1
+  | (h::t) := h * mul_foldr t
+  
+  #reduce mul_foldr []
+  #reduce mul_foldr [r120,r120]
+  #reduce mul_foldr [r120,r120,r120]
+  
+  -- we could also do this, as in the previous chapter
+  def rot_comp_n := @mul_foldr rot_syms
+  #reduce rot_comp_n []
+  #reduce rot_comp_n [r120,r120]
+  #reduce rot_comp_n [r120,r120,r120]
 
--- foldr using monoid notation
-def mul_foldr {α : Type} [monoid α] : list α → α
-|  list.nil := 1
-| (h::t) := h * mul_foldr t
-
-#reduce mul_foldr []
-#reduce mul_foldr [r120,r120]
-#reduce mul_foldr [r120,r120,r120]
-
--- we could also do this, as in the previous chapter
-def rot_comp_n := @mul_foldr rot_syms
-#reduce rot_comp_n []
-#reduce rot_comp_n [r120,r120]
-#reduce rot_comp_n [r120,r120,r120]
--- QUOTE.
-
-/- TEXT:
 In conclusion, by define a Lean monoid typeclass instance
 for our set of rotation-representing objects, rot_syms, we
 have obtained:
@@ -342,5 +314,3 @@ have obtained:
 - the ability to extend the monoid operator to an n-ary version
 - to do that using a "safe" (new) version of the foldr function
 - a complete, precise, abstract, computable definition of monoid
-TEXT. -/
-

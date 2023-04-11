@@ -1,8 +1,4 @@
 
-import .A_01_monoids
-
-/- TEXT: 
-
 ******
 Groups
 ******
@@ -109,17 +105,15 @@ division operations, with division just multiplication by
 inverse; and associated notations (a⁻¹ and a/b). The group
 typeclass then adds a constraint (required proof) that, 
 for any a in the group, a⁻¹ is really a left inverse for a. 
-TEXT. -/
 
--- QUOTE:
-#check @group
-/-
-class group (G : Type u) extends div_inv_monoid G :=
-(mul_left_inv : ∀ a : G, a⁻¹ * a = 1)
--/
--- QUOTE.
+.. code-block:: lean
 
-/- TEXT: 
+  #check @group
+  /-
+  class group (G : Type u) extends div_inv_monoid G :=
+  (mul_left_inv : ∀ a : G, a⁻¹ * a = 1)
+  -/
+
 
 div_inv_monoid
 ~~~~~~~~~~~~~~
@@ -128,55 +122,51 @@ The div_inv_monoid typeclass in turn extends monoid, has_inv,
 and has_div. A group is thus automatically a monoid. Instances 
 of the has_inv and has_div typeclasses provide unary inverse 
 and binary division operations. 
-TEXT. -/
 
--- QUOTE: 
--- What is a div_inv_monoid?
-#check @div_inv_monoid
-/-
-class div_inv_monoid (G : Type u) extends monoid G, has_inv G, has_div G :=
-(div := λ a b, a * b⁻¹)
-(div_eq_mul_inv : ∀ a b : G, a / b = a * b⁻¹ . try_refl_tac)
-(zpow : ℤ → G → G := zpow_rec)
-(zpow_zero' : ∀ (a : G), zpow 0 a = 1 . try_refl_tac)
-(zpow_succ' :
-  ∀ (n : ℕ) (a : G), zpow (int.of_nat n.succ) a = a * zpow (int.of_nat n) a . try_refl_tac)
-(zpow_neg' :
-  ∀ (n : ℕ) (a : G), zpow (-[1 + n]) a = (zpow n.succ a)⁻¹ . try_refl_tac)
--/
--- QUOTE.
+.. code-block:: lean
 
-/- TEXT: 
+  -- What is a div_inv_monoid?
+  #check @div_inv_monoid
+  /-
+  class div_inv_monoid (G : Type u) extends monoid G, has_inv G, has_div G :=
+  (div := λ a b, a * b⁻¹)
+  (div_eq_mul_inv : ∀ a b : G, a / b = a * b⁻¹ . try_refl_tac)
+  (zpow : ℤ → G → G := zpow_rec)
+  (zpow_zero' : ∀ (a : G), zpow 0 a = 1 . try_refl_tac)
+  (zpow_succ' :
+    ∀ (n : ℕ) (a : G), zpow (int.of_nat n.succ) a = a * zpow (int.of_nat n) a . try_refl_tac)
+  (zpow_neg' :
+    ∀ (n : ℕ) (a : G), zpow (-[1 + n]) a = (zpow n.succ a)⁻¹ . try_refl_tac)
+  -/
+
 
 has_inv and has_div
 ~~~~~~~~~~~~~~~~~~~
 
-TEXT. -/
 
--- QUOTE:
--- what are has_inv and has_div
-#check @has_inv
-/-
-class has_inv      (α : Type u) := (inv : α → α)
+.. code-block:: lean
 
-An instance of has_inv holds a single unary operator, inv, 
-on group elements of type α, and provides the notation, a⁻¹, 
-to mean (inv a). 
--/
-#check @has_div
-/-
-class has_div      (α : Type u) := (div : α → α → α)
+  -- what are has_inv and has_div
+  #check @has_inv
+  /-
+  class has_inv      (α : Type u) := (inv : α → α)
+  
+  An instance of has_inv holds a single unary operator, inv, 
+  on group elements of type α, and provides the notation, a⁻¹, 
+  to mean (inv a). 
+  -/
+  #check @has_div
+  /-
+  class has_div      (α : Type u) := (div : α → α → α)
+  
+  An instance of has_div holds a single binary operator, div, 
+  on group elements of type α, and provides the notation, a/b 
+  to mean (mul a (inv b)), or (add a (inv b)), depending on
+  whether one is working with a multiplicative or additive
+  group. The notion of division is generalized to any group
+  in this way. 
+  -/
 
-An instance of has_div holds a single binary operator, div, 
-on group elements of type α, and provides the notation, a/b 
-to mean (mul a (inv b)), or (add a (inv b)), depending on
-whether one is working with a multiplicative or additive
-group. The notion of division is generalized to any group
-in this way. 
--/
--- QUOTE.
-
-/- TEXT:
 An instance of the has_inv typeclass will have one field
 value, a total function from group elements to other group 
 elements. In the context of a group, it will be cosntrained
@@ -198,35 +188,33 @@ names implicit and let Lean fill them is as *mk*. By
 #check-ing the type of mk, you see what arguments you 
 have to provide, including both data and proofs. Let's 
 check the type of div_inv_monoid.mk.
-TEXT. -/
 
--- QUOTE:
+.. code-block:: lean
 
-#check @div_inv_monoid.mk 
-/-
-div_inv_monoid.mk :
-  Π -- arguments
-    {G : Type u_1} 
-    (mul : G → G → G)
-    (mul_assoc : ∀ (a b c : G), a * b * c = a * (b * c))
-    (one : G)
-    (one_mul : ∀ (a : G), 1 * a = a) 
-    (mul_one : ∀ (a : G), a * 1 = a) 
-    (npow : ℕ → G → G)
-    (npow_zero' : auto_param (∀ (x : G), npow 0 x = 1) (name.mk_string "try_refl_tac" name.anonymous))
-    (npow_succ' : auto_param (∀ (n : ℕ) (x : G), npow n.succ x = x * npow n x) (name.mk_string "try_refl_tac" name.anonymous))
-    (inv : G → G) 
-    (div : G → G → G),  -- comma
-    auto_param (∀ (a b : G), a / b = a * b⁻¹) (name.mk_string "try_refl_tac" name.anonymous) →
-    Π (zpow : ℤ → G → G),
-      auto_param (∀ (a : G), zpow 0 a = 1) (name.mk_string "try_refl_tac" name.anonymous) →
-      auto_param (∀ (n : ℕ) (a : G), zpow (int.of_nat n.succ) a = a * zpow (int.of_nat n) a) (name.mk_string "try_refl_tac" name.anonymous) →
-      auto_param (∀ (n : ℕ) (a : G), zpow -[1+ n] a = (zpow ↑(n.succ) a)⁻¹) (name.mk_string "try_refl_tac" name.anonymous) →
-  div_inv_monoid G
--/
--- QUOTE.
+  
+  #check @div_inv_monoid.mk 
+  /-
+  div_inv_monoid.mk :
+    Π -- arguments
+      {G : Type u_1} 
+      (mul : G → G → G)
+      (mul_assoc : ∀ (a b c : G), a * b * c = a * (b * c))
+      (one : G)
+      (one_mul : ∀ (a : G), 1 * a = a) 
+      (mul_one : ∀ (a : G), a * 1 = a) 
+      (npow : ℕ → G → G)
+      (npow_zero' : auto_param (∀ (x : G), npow 0 x = 1) (name.mk_string "try_refl_tac" name.anonymous))
+      (npow_succ' : auto_param (∀ (n : ℕ) (x : G), npow n.succ x = x * npow n x) (name.mk_string "try_refl_tac" name.anonymous))
+      (inv : G → G) 
+      (div : G → G → G),  -- comma
+      auto_param (∀ (a b : G), a / b = a * b⁻¹) (name.mk_string "try_refl_tac" name.anonymous) →
+      Π (zpow : ℤ → G → G),
+        auto_param (∀ (a : G), zpow 0 a = 1) (name.mk_string "try_refl_tac" name.anonymous) →
+        auto_param (∀ (n : ℕ) (a : G), zpow (int.of_nat n.succ) a = a * zpow (int.of_nat n) a) (name.mk_string "try_refl_tac" name.anonymous) →
+        auto_param (∀ (n : ℕ) (a : G), zpow -[1+ n] a = (zpow ↑(n.succ) a)⁻¹) (name.mk_string "try_refl_tac" name.anonymous) →
+    div_inv_monoid G
+  -/
 
-/- TEXT:
 From the constructor type we can see that we'll need to provide explicit argument 
 values for mul, mul_assoc,  one, one_mul, mul_one, and npow, all of which we already
 have from our monoid typeclass for rot_syms, as well  as implementations of inv and div, 
@@ -248,18 +236,16 @@ need implementations for α = rot_syms
 rotation-specific inv 
 ~~~~~~~~~~~~~~~~~~~~~~
 
-TEXT. -/
 
--- QUOTE:
--- Here's our inverse operation
-def rot_inv : rot_syms → rot_syms := _
--- it comes with ⁻¹ as a notation
+.. code-block:: lean
 
--- Let's stick it in a has_inv instance for rot_syms
-instance : has_inv rot_syms := _
--- QUOTE.
+  -- Here's our inverse operation
+  def rot_inv : rot_syms → rot_syms := _
+  -- it comes with ⁻¹ as a notation
+  
+  -- Let's stick it in a has_inv instance for rot_syms
+  instance : has_inv rot_syms := _
 
-/- TEXT:
 
 rotation-specific div
 ~~~~~~~~~~~~~~~~~~~~~
@@ -267,36 +253,32 @@ rotation-specific div
 Instantiating has_div for rot_syms requires a 
 rot_syms-specific implementation of div(ision).
 This function just multiplies by the inv(erse).
-TEXT. -/
 
--- QUOTE:
--- Here's our rotation-specific division operation
-def rot_div (x y : rot_syms) :=  x * y⁻¹
--- note use of notations from monoid (*) and has_inv
+.. code-block:: lean
 
--- Now wecan instantiate has_div for rot_syms 
-instance has_div_rot_syms : has_div rot_syms := _
--- thus overloading div(ision) (/) for rot_syms
--- QUOTE.
+  -- Here's our rotation-specific division operation
+  def rot_div (x y : rot_syms) :=  x * y⁻¹
+  -- note use of notations from monoid (*) and has_inv
+  
+  -- Now wecan instantiate has_div for rot_syms 
+  instance has_div_rot_syms : has_div rot_syms := _
+  -- thus overloading div(ision) (/) for rot_syms
 
-/- TEXT: 
 
 Demo
 ~~~~
-TEXT. -/
 
--- QUOTE:
-/-
-Verify test correctness in your head by 
-first expanding the definition of div, then
-unfolding the application of ⁻¹, and finally
-reasoning about the "geometry" of the example. 
--/
-example :r240 / r240 = 1 := rfl
+.. code-block:: lean
 
--- QUOTE.
+  /-
+  Verify test correctness in your head by 
+  first expanding the definition of div, then
+  unfolding the application of ⁻¹, and finally
+  reasoning about the "geometry" of the example. 
+  -/
+  example :r240 / r240 = 1 := rfl
+  
 
-/- TEXT:
 
 div_inv_monoid
 ~~~~~~~~~~~~~~
@@ -311,20 +293,17 @@ function to compute a result for any values of type integer?
 The type definition is the key, as you'll have to define such
 a function by cases analysis on constructor applications. The
 key in turn is to understand how int terms are represented.   
-TEXT. -/
 
--- QUOTE:
--- inductive definition of e int (with standard notation ℤ)
-#check int
-/-
-inductive int : Type
-| of_nat : nat → int
-| neg_succ_of_nat : nat → int
--/
--- QUOTE. 
+.. code-block:: lean
 
+  -- inductive definition of e int (with standard notation ℤ)
+  #check int
+  /-
+  inductive int : Type
+  | of_nat : nat → int
+  | neg_succ_of_nat : nat → int
+  -/
 
-/- TEXT:
 There are two forms of int value. Each incorporates a nat value (n). 
 The term, (int.of_nat n), is the int representation of the injection of
 the nat value, n, into the integers. So, for example, (int.of_nat 3) is
@@ -343,80 +322,78 @@ to do in each case. Note that zpow just generalizes npow to take negative
 integer values as well non-negatives corresponding to natural numbers. Put
 this together with the meaning of exponentiation by a negative value and
 you're good to go!
-TEXT. -/
 
--- QUOTE:
--- hint: think about rot_npow from monoid
-def zpow_rot_syms : ℤ → rot_syms → rot_syms 
-| (int.of_nat n) r := _           -- reminder: something about rot_npow, hmmm ...
-| (int.neg_succ_of_nat n) r := _  -- reminder: rot_npow (and a negative exponent)
+.. code-block:: lean
 
--- QUOTE.
-
-/- TEXT:
-TEXT. -/
-
--- QUOTE:
-
--- a little pain; use "show" to force rewrite of (a * b⁻¹)
-theorem rot_inv_div : ∀ (a b : rot_syms), a / b = a * b⁻¹ :=
-begin
-end
+  -- hint: think about rot_npow from monoid
+  def zpow_rot_syms : ℤ → rot_syms → rot_syms 
+  | (int.of_nat n) r := _           -- reminder: something about rot_npow, hmmm ...
+  | (int.neg_succ_of_nat n) r := _  -- reminder: rot_npow (and a negative exponent)
+  
 
 
-/-
-SEE Design note on div_inv_monoid/sub_neg_monoid and 
-division_monoid/subtraction_monoid in the Lean source
-file. Now let's build our group typeclass instance for
-rot_syms.
--/ 
+.. code-block:: lean
 
-#check @div_inv_monoid.mk
-/-
-div_inv_monoid.mk :
-  Π -- arguments
-    {G : Type u_1} 
-    (mul : G → G → G)
-    (mul_assoc : ∀ (a b c : G), a * b * c = a * (b * c))
-    (one : G)
-    (one_mul : ∀ (a : G), 1 * a = a) 
-    (mul_one : ∀ (a : G), a * 1 = a) 
-    (npow : ℕ → G → G)
-    (npow_zero' : auto_param (∀ (x : G), npow 0 x = 1) (name.mk_string "try_refl_tac" name.anonymous))
-    (npow_succ' : auto_param (∀ (n : ℕ) (x : G), npow n.succ x = x * npow n x) (name.mk_string "try_refl_tac" name.anonymous))
-    (inv : G → G) 
-    (div : G → G → G),  -- comma
-    auto_param (∀ (a b : G), a / b = a * b⁻¹) (name.mk_string "try_refl_tac" name.anonymous) →
-    Π (zpow : ℤ → G → G),
-      auto_param (∀ (a : G), zpow 0 a = 1) (name.mk_string "try_refl_tac" name.anonymous) →
-      auto_param (∀ (n : ℕ) (a : G), zpow (int.of_nat n.succ) a = a * zpow (int.of_nat n) a) (name.mk_string "try_refl_tac" name.anonymous) →
-      auto_param (∀ (n : ℕ) (a : G), zpow -[1+ n] a = (zpow ↑(n.succ) a)⁻¹) (name.mk_string "try_refl_tac" name.anonymous) →
-  div_inv_monoid G
--/
+  
+  -- a little pain; use "show" to force rewrite of (a * b⁻¹)
+  theorem rot_inv_div : ∀ (a b : rot_syms), a / b = a * b⁻¹ :=
+  begin
+  end
+  
+  
+  /-
+  SEE Design note on div_inv_monoid/sub_neg_monoid and 
+  division_monoid/subtraction_monoid in the Lean source
+  file. Now let's build our group typeclass instance for
+  rot_syms.
+  -/ 
+  
+  #check @div_inv_monoid.mk
+  /-
+  div_inv_monoid.mk :
+    Π -- arguments
+      {G : Type u_1} 
+      (mul : G → G → G)
+      (mul_assoc : ∀ (a b c : G), a * b * c = a * (b * c))
+      (one : G)
+      (one_mul : ∀ (a : G), 1 * a = a) 
+      (mul_one : ∀ (a : G), a * 1 = a) 
+      (npow : ℕ → G → G)
+      (npow_zero' : auto_param (∀ (x : G), npow 0 x = 1) (name.mk_string "try_refl_tac" name.anonymous))
+      (npow_succ' : auto_param (∀ (n : ℕ) (x : G), npow n.succ x = x * npow n x) (name.mk_string "try_refl_tac" name.anonymous))
+      (inv : G → G) 
+      (div : G → G → G),  -- comma
+      auto_param (∀ (a b : G), a / b = a * b⁻¹) (name.mk_string "try_refl_tac" name.anonymous) →
+      Π (zpow : ℤ → G → G),
+        auto_param (∀ (a : G), zpow 0 a = 1) (name.mk_string "try_refl_tac" name.anonymous) →
+        auto_param (∀ (n : ℕ) (a : G), zpow (int.of_nat n.succ) a = a * zpow (int.of_nat n) a) (name.mk_string "try_refl_tac" name.anonymous) →
+        auto_param (∀ (n : ℕ) (a : G), zpow -[1+ n] a = (zpow ↑(n.succ) a)⁻¹) (name.mk_string "try_refl_tac" name.anonymous) →
+    div_inv_monoid G
+  -/
+  
+  instance div_inv_monoid_rot_syms : div_inv_monoid rot_syms :=  
+  ⟨
+    rot_mul,
+    rot_mul_assoc,
+    1,
+    rot_left_ident,
+    rot_right_ident,
+    rot_npow,
+    _,                -- Lean infers these auto_param values
+    _,
+    rot_inv,
+    rot_div,
+    _,
+    zpow_rot_syms,
+    _,
+    _,
+    _
+  ⟩ 
+  
+  #eval @div_inv_monoid_rot_syms 
+  
+  #check @group
+  #check @group.mk
+  
+  
 
-instance div_inv_monoid_rot_syms : div_inv_monoid rot_syms :=  
-⟨
-  rot_mul,
-  rot_mul_assoc,
-  1,
-  rot_left_ident,
-  rot_right_ident,
-  rot_npow,
-  _,                -- Lean infers these auto_param values
-  _,
-  rot_inv,
-  rot_div,
-  _,
-  zpow_rot_syms,
-  _,
-  _,
-  _
-⟩ 
-
-#eval @div_inv_monoid_rot_syms 
-
-#check @group
-#check @group.mk
-
-
--- QUOTE.
