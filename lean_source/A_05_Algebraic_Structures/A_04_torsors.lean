@@ -112,19 +112,24 @@ TEXT. -/
 -- renaming
 def rot_add := rot_mul
 def rot_add_assoc := rot_mul_assoc
-def foo' := rot_npow
+def foo := rot_npow
 
 #check @add_monoid.mk
 
 /-
-  Π {M : Type u_1} (add : M → M → M),
-    (∀ (a b c : M), a + b + c = a + (b + c)) →
-    Π (zero : M) (zero_add : ∀ (a : M), 0 + a = a) (add_zero : ∀ (a : M), a + 0 = a) (nsmul : ℕ → M → M),
-      auto_param (∀ (x : M), nsmul 0 x = 0) (name.mk_string "try_refl_tac" name.anonymous) →
-      auto_param (∀ (n : ℕ) (x : M), nsmul n.succ x = x + nsmul n x)
-        (name.mk_string "try_refl_tac" name.anonymous) →
-      add_monoid M
+Π {M : Type u_1} 
+  (add : M → M → M),
+  (∀ (a b c : M), a + b + c = a + (b + c)) →
+  Π (zero : M) 
+  (zero_add : ∀ (a : M), 0 + a = a) 
+  (add_zero : ∀ (a : M), a + 0 = a) 
+  (nsmul : ℕ → M → M),
+  auto_param (∀ (x : M), nsmul 0 x = 0) (name.mk_string "try_refl_tac" name.anonymous) →
+  auto_param (∀ (n : ℕ) (x : M), nsmul n.succ x = x + nsmul n x)
+    (name.mk_string "try_refl_tac" name.anonymous) →
+  add_monoid MLea
 -/
+
 
 open rot
 instance : add_monoid rot :=
@@ -142,7 +147,7 @@ instance : add_monoid rot :=
     cases a, 
     repeat {exact rfl}, 
   end,
-  foo',    -- TODO: fix naming
+  foo,    -- TODO: fix naming
 ⟩ 
 
 -- The add_monoid structure gives us addition and the + notation for it
@@ -195,12 +200,12 @@ instance : add_group rot :=
   0,              -- r0 denoted 0 is additive identity 
   rot_left_ident,
   rot_right_ident,
-  foo',       -- again reusing mult operator
+  foo,       -- again reusing mult operator
   -- nsmul 0
   begin assume x, exact rfl, end,
   begin 
     assume n x,
-    simp [foo'],   -- TODO: fix naming
+    simp [foo],   -- TODO: fix naming
     exact rfl,
   end,
   rot_inv,
@@ -347,7 +352,7 @@ def vsub_rot_tri : tri → tri → rot
 | tri.t0 tri.t120 := r240
 | tri.t0 tri.t240 := r120
 | tri.t120 tri.t0 := r120
-| tri.t120 tri.t120 := 0   -- = t120 = x + t120, x must be 0 rot (we are tying to figure out the result, we can do it algebraically)
+| tri.t120 tri.t120 := 0
 | tri.t120 tri.t240 := r240
 | tri.t240 tri.t0 := r240
 | tri.t240 tri.t120 := r120
