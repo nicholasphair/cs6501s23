@@ -4,8 +4,93 @@ import algebra.module
 def x := 4
 #check x
 
+/- TEXT:
+
+*******
+Modules
+*******
+
+We've now undertood what it means to be a torsor over 
+a group. A concrete example is our torsor of triangles 
+over a group of rotational symmetries. That fact that
+rotational symmetries form an additive group lets us 
+do *additive group math* on symmetries: associative add, 
+additively invert, subtract, zero left/right identity. 
+
+In this chapter, we strengthen this concept by upgrading 
+a mere additive group of actions/differences to a *module* 
+of actions. In comparison with a group, G, a module adds a
+set of scalars and an operation for multiplying group 
+actions by scalars. 
+
+For example, if s is a scalar and v is a group action,
+then s • v is scalar multiplication of s and v yielding a
+new, "scaled" group action. 
+
+The set of scalars must form at least a *ring*, so you 
+can add, invert, substract, and multiply scalars by each 
+other (+, -, *). For example, the integers for a ring: 
+you can multiply, add, invert, and thus subtract them,
+but dividing them generally doesn't produce new integers.
+
+If sclars have multiplicative inverses as well, and thus 
+division, then you have a scalar *field*. For example, the
+set of real numbers minus {0} forms a field. A module with
+a scalar *field* is called a vector space.
+
+The overall picture, then, is one in which, in a module, 
+you can not only add, invert, and substract actions, but
+you can also multiply (*scale*) them by scalars. Example:
+if v₁ and v₂ are group actions and s₁ and s₂ are scalars,
+then s₁ • (v1 +ᵥ v2) is also an action, s₁ • v₁ + s₁ • v₂; 
+and (s₁ + s₂) • v1 = s• v₁ + s₁ • v₂, is too. A module is
+a generalization of a vector space where you can't always 
+compute inverses of scalars. 
+
+Once we have modules, as richer sets of group actions, then
+we'll be able to form torsors over *modules*. That takes us
+right right up to the threshold of affine spaces, which are
+simply torsors over *vector* spaces. Vector spaces are just
+modules with that extra structure on their sets of scalars.
 
 
+Modules in Lean
+---------------
+
+In Lean, one can form a module from an *additive commutative 
+monoid* M, and a *semi-ring,* R, of scalars. A module relaxes
+the need for an underlying *group* of actions by relaxing the
+need for additive inverses of actions. And unlike a full ring, 
+a semi-ring omits the requirement for additive inverses (and
+thus subtraction) of scalars. 
+
+Note that in a ring, the existence of additive inverses means
+that 0 is a multiplicative zero (prove it to yourself); in a 
+semi-ring, by contrast, without additive inverses, one has to
+identify the multiplicative zero explicitly (and show that it
+is one).
+TEXT. -/
+
+/- TEXT:
+
+Example
+-------
+
+Can we turn our group of triangle rotations into a module?
+What would we need? Answer: a ring of scalars and a scalar
+multiplication operation. What would be a good scalar ring?
+How about the integers? They do form a ring, though not a
+field, as discussed. If we have a rotation action, g, and 
+an integer scalar r, how would we define the scalar product,
+r • g? It needs to be another action. How about the action
+that simply applies g r times? 
+
+additive commutative monoid
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+TEXT. -/
+
+-- QUOTE:
 /-
 /-- An additive commutative monoid is an additive monoid with commutative `(+)`. -/
 @[protect_proj, ancestor add_monoid add_comm_semigroup]
@@ -159,4 +244,5 @@ instance : module ℤ rot :=
 open tri
 #reduce ((3:ℤ) • r120) • t120
 #reduce ((-2:ℤ) • r120) • t120
+-- QUOTE. 
 
