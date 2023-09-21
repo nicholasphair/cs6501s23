@@ -19,6 +19,7 @@ inductive app
 | seq (a1 a2 : app) : app
 | if_then_else (c : bool_expr) (t : app) (f : app) : app
 | while (c : bool_expr) (b : app) : app
+| secure (auth : app) (a: app)
 open app
  
 def app_eval : app → app_state → unit
@@ -61,3 +62,9 @@ def loop_example: app :=
 
 def inductive_example: app := 
   seq (while (is_driving) lock) messenger
+
+
+  def eval : app → (concept → string) → string
+  | (atomic c) i := i c
+  | (seq a b) i := s!"{}"
+  | _ _ := ""
